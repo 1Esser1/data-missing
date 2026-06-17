@@ -5,13 +5,15 @@ import {
   Lightbulb, Building2, AlertTriangle, BarChart3,
   Loader2, AlertCircle, RefreshCw, ChevronDown, ChevronUp,
   Rocket, BookOpen, ShieldCheck, GitFork, GitBranch, GitCommitHorizontal,
-  Link2, ExternalLink, Plus, X,
+  Link2, ExternalLink, Plus, X, Layers,
 } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
 import workplaceService from '../services/workplaceService';
+import useAuthStore from '../store/authStore';
 import jiraService from '../services/jiraService';
 import { useLanguage, useTranslatedWorkplace } from '../i18n/LanguageContext';
 import CommitModal from '../components/git/CommitModal';
+import { useTheme } from '../contexts/ThemeContext';
 
 const JIRA_ISSUE_TYPES = ['Task', 'Bug', 'Story', 'Epic'];
 
@@ -56,6 +58,7 @@ const NEXT_STATUS = { TODO: 'IN_PROGRESS', IN_PROGRESS: 'DONE', DONE: 'DONE' };
 
 function SubtaskCard({ subtask, onStatusChange, updating, repoName, provider, onCommit, jiraConnected, onJiraPush, isPushingJira, onJiraSync, isSyncingJira }) {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const [tipsOpen, setTipsOpen] = useState(false);
 
   const st      = SUBTASK_STATUS[subtask.status] || SUBTASK_STATUS.TODO;
@@ -67,8 +70,8 @@ function SubtaskCard({ subtask, onStatusChange, updating, repoName, provider, on
 
   return (
     <div style={{
-      backgroundColor: 'white', borderRadius: '0.75rem',
-      border: '1px solid #F0F0F0', overflow: 'hidden',
+      backgroundColor: theme.cardBg, borderRadius: '0.75rem',
+      border: `1px solid ${theme.border}`, overflow: 'hidden',
       boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
       borderLeft: `3px solid ${st.color}`,
       opacity: updating ? 0.7 : 1,
@@ -80,10 +83,10 @@ function SubtaskCard({ subtask, onStatusChange, updating, repoName, provider, on
           {/* Order number */}
           <div style={{
             width: '28px', height: '28px', flexShrink: 0,
-            borderRadius: '50%', backgroundColor: '#F3F4F6',
+            borderRadius: '50%', backgroundColor: theme.tagBg,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#374151' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: '700', color: theme.textMed }}>
               {subtask.subtaskOrder}
             </span>
           </div>
@@ -91,7 +94,7 @@ function SubtaskCard({ subtask, onStatusChange, updating, repoName, provider, on
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem', marginBottom: '0.35rem' }}>
               <h4 style={{
-                fontSize: '0.9rem', fontWeight: '700', color: '#111827', marginRight: '0.25rem',
+                fontSize: '0.9rem', fontWeight: '700', color: theme.text, marginRight: '0.25rem',
               }}>
                 {subtask.title}
               </h4>
@@ -106,7 +109,7 @@ function SubtaskCard({ subtask, onStatusChange, updating, repoName, provider, on
                 display: 'flex', alignItems: 'center', gap: '0.25rem',
                 padding: '0.15rem 0.5rem', borderRadius: '9999px',
                 fontSize: '0.65rem', fontWeight: '600',
-                backgroundColor: '#F3F4F6', color: '#374151',
+                backgroundColor: theme.tagBg, color: theme.textMed,
               }}>
                 <Clock size={10} /> {subtask.estimatedHours}h
               </span>
@@ -129,7 +132,7 @@ function SubtaskCard({ subtask, onStatusChange, updating, repoName, provider, on
               )}
             </div>
 
-            <p style={{ fontSize: '0.82rem', color: '#374151', lineHeight: 1.6, marginBottom: '0.5rem' }}>
+            <p style={{ fontSize: '0.82rem', color: theme.textMed, lineHeight: 1.6, marginBottom: '0.5rem' }}>
               {subtask.description}
             </p>
 
@@ -236,8 +239,8 @@ function SubtaskCard({ subtask, onStatusChange, updating, repoName, provider, on
                       style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         width: '24px', height: '24px', borderRadius: '0.375rem',
-                        border: '1px solid #E5E7EB', backgroundColor: 'white',
-                        color: '#6B7280', cursor: isSyncingJira ? 'not-allowed' : 'pointer',
+                        border: `1px solid ${theme.borderMed}`, backgroundColor: theme.cardBg,
+                        color: theme.textSub, cursor: isSyncingJira ? 'not-allowed' : 'pointer',
                         opacity: isSyncingJira ? 0.5 : 1, flexShrink: 0,
                       }}
                     >
@@ -301,7 +304,7 @@ function SubtaskCard({ subtask, onStatusChange, updating, repoName, provider, on
                 <span style={{ color: '#F5A623', fontWeight: '700', flexShrink: 0, fontSize: '0.78rem' }}>
                   {i + 1}.
                 </span>
-                <p style={{ fontSize: '0.78rem', color: '#374151', lineHeight: 1.5 }}>{tip}</p>
+                <p style={{ fontSize: '0.78rem', color: theme.textMed, lineHeight: 1.5 }}>{tip}</p>
               </div>
             ))}
           </div>
@@ -313,15 +316,16 @@ function SubtaskCard({ subtask, onStatusChange, updating, repoName, provider, on
 
 function PlanCard({ text }) {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   return (
     <div style={{
-      backgroundColor: 'white', borderRadius: '0.75rem',
-      border: '1px solid #F0F0F0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+      backgroundColor: theme.cardBg, borderRadius: '0.75rem',
+      border: `1px solid ${theme.border}`, boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
       overflow: 'hidden',
     }}>
       <div style={{
         padding: '0.875rem 1.25rem',
-        borderBottom: '1px solid #F0F0F0',
+        borderBottom: `1px solid ${theme.border}`,
         display: 'flex', alignItems: 'center', gap: '0.5rem',
         backgroundColor: '#1A1A2E',
       }}>
@@ -331,7 +335,7 @@ function PlanCard({ text }) {
         </span>
       </div>
       <div style={{ padding: '1rem 1.25rem' }}>
-        <p style={{ fontSize: '0.83rem', color: '#374151', lineHeight: 1.7 }}>{text}</p>
+        <p style={{ fontSize: '0.83rem', color: theme.textMed, lineHeight: 1.7 }}>{text}</p>
       </div>
     </div>
   );
@@ -339,16 +343,17 @@ function PlanCard({ text }) {
 
 function TipsCard({ tips }) {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   if (!tips?.length) return null;
   return (
     <div style={{
-      backgroundColor: 'white', borderRadius: '0.75rem',
-      border: '1px solid #F0F0F0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+      backgroundColor: theme.cardBg, borderRadius: '0.75rem',
+      border: `1px solid ${theme.border}`, boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
       overflow: 'hidden',
     }}>
       <div style={{
         padding: '0.875rem 1.25rem',
-        borderBottom: '1px solid #F0F0F0',
+        borderBottom: `1px solid ${theme.border}`,
         display: 'flex', alignItems: 'center', gap: '0.5rem',
         backgroundColor: '#FFFBEB',
       }}>
@@ -370,7 +375,7 @@ function TipsCard({ tips }) {
             }}>
               <span style={{ fontSize: '0.65rem', fontWeight: '700', color: '#D97706' }}>{i + 1}</span>
             </div>
-            <p style={{ fontSize: '0.82rem', color: '#374151', lineHeight: 1.6 }}>{tip}</p>
+            <p style={{ fontSize: '0.82rem', color: theme.textMed, lineHeight: 1.6 }}>{tip}</p>
           </div>
         ))}
       </div>
@@ -380,16 +385,17 @@ function TipsCard({ tips }) {
 
 function BenchmarksCard({ benchmarks }) {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   if (!benchmarks?.length) return null;
   return (
     <div style={{
-      backgroundColor: 'white', borderRadius: '0.75rem',
-      border: '1px solid #F0F0F0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+      backgroundColor: theme.cardBg, borderRadius: '0.75rem',
+      border: `1px solid ${theme.border}`, boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
       overflow: 'hidden',
     }}>
       <div style={{
         padding: '0.875rem 1.25rem',
-        borderBottom: '1px solid #F0F0F0',
+        borderBottom: `1px solid ${theme.border}`,
         display: 'flex', alignItems: 'center', gap: '0.5rem',
         backgroundColor: '#F0FDF4',
       }}>
@@ -403,12 +409,12 @@ function BenchmarksCard({ benchmarks }) {
           <div key={i} style={{
             padding: '0.75rem',
             borderRadius: '0.5rem',
-            backgroundColor: '#FAFAFA',
-            border: '1px solid #F0F0F0',
+            backgroundColor: theme.hoverBg,
+            border: `1px solid ${theme.border}`,
             marginBottom: i < benchmarks.length - 1 ? '0.5rem' : 0,
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem' }}>
-              <span style={{ fontSize: '0.82rem', fontWeight: '700', color: '#111827' }}>
+              <span style={{ fontSize: '0.82rem', fontWeight: '700', color: theme.text }}>
                 🏦 {bm.bank}
               </span>
               <span style={{
@@ -420,16 +426,16 @@ function BenchmarksCard({ benchmarks }) {
                 {bm.implementationTime}
               </span>
             </div>
-            <p style={{ fontSize: '0.78rem', fontWeight: '600', color: '#374151', marginBottom: '0.25rem' }}>
+            <p style={{ fontSize: '0.78rem', fontWeight: '600', color: theme.textMed, marginBottom: '0.25rem' }}>
               {bm.feature}
             </p>
             {bm.outcome && (
-              <p style={{ fontSize: '0.75rem', color: '#6B7280', lineHeight: 1.5 }}>
+              <p style={{ fontSize: '0.75rem', color: theme.textSub, lineHeight: 1.5 }}>
                 {bm.outcome}
               </p>
             )}
             {bm.source && (
-              <p style={{ fontSize: '0.68rem', color: '#9CA3AF', marginTop: '0.35rem', fontStyle: 'italic' }}>
+              <p style={{ fontSize: '0.68rem', color: theme.textMuted, marginTop: '0.35rem', fontStyle: 'italic' }}>
                 {t('benchmark_source')}: {bm.source}
               </p>
             )}
@@ -442,17 +448,18 @@ function BenchmarksCard({ benchmarks }) {
 
 function DoraCard({ wp }) {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const riskStyle = RISK_STYLE[wp.changeFailureRisk] || RISK_STYLE.MEDIUM;
 
   return (
     <div style={{
-      backgroundColor: 'white', borderRadius: '0.75rem',
-      border: '1px solid #F0F0F0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+      backgroundColor: theme.cardBg, borderRadius: '0.75rem',
+      border: `1px solid ${theme.border}`, boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
       overflow: 'hidden',
     }}>
       <div style={{
         padding: '0.875rem 1.25rem',
-        borderBottom: '1px solid #F0F0F0',
+        borderBottom: `1px solid ${theme.border}`,
         display: 'flex', alignItems: 'center', gap: '0.5rem',
         backgroundColor: '#EFF6FF',
       }}>
@@ -463,26 +470,26 @@ function DoraCard({ wp }) {
       </div>
       <div style={{ padding: '1rem 1.25rem' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
-          <div style={{ backgroundColor: '#F9FAFB', borderRadius: '0.5rem', padding: '0.625rem' }}>
-            <p style={{ fontSize: '0.68rem', color: '#6B7280', marginBottom: '0.25rem' }}>
+          <div style={{ backgroundColor: theme.hoverBg, borderRadius: '0.5rem', padding: '0.625rem' }}>
+            <p style={{ fontSize: '0.68rem', color: theme.textSub, marginBottom: '0.25rem' }}>
               {t('dora_lead_time')}
             </p>
-            <p style={{ fontSize: '1.1rem', fontWeight: '700', color: '#111827' }}>
-              {wp.estimatedLeadTimeDays ?? '—'}<span style={{ fontSize: '0.75rem', color: '#6B7280', marginLeft: '0.2rem' }}>d</span>
+            <p style={{ fontSize: '1.1rem', fontWeight: '700', color: theme.text }}>
+              {wp.estimatedLeadTimeDays ?? '—'}<span style={{ fontSize: '0.75rem', color: theme.textSub, marginLeft: '0.2rem' }}>d</span>
             </p>
           </div>
-          <div style={{ backgroundColor: '#F9FAFB', borderRadius: '0.5rem', padding: '0.625rem' }}>
-            <p style={{ fontSize: '0.68rem', color: '#6B7280', marginBottom: '0.25rem' }}>
+          <div style={{ backgroundColor: theme.hoverBg, borderRadius: '0.5rem', padding: '0.625rem' }}>
+            <p style={{ fontSize: '0.68rem', color: theme.textSub, marginBottom: '0.25rem' }}>
               {t('dora_freq')}
             </p>
-            <p style={{ fontSize: '0.78rem', fontWeight: '700', color: '#111827' }}>
+            <p style={{ fontSize: '0.78rem', fontWeight: '700', color: theme.text }}>
               {FREQ_KEY_MAP[wp.deploymentFrequency] ? t(FREQ_KEY_MAP[wp.deploymentFrequency]) : (wp.deploymentFrequency ?? '—')}
             </p>
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-          <span style={{ fontSize: '0.75rem', color: '#6B7280' }}>{t('dora_change_risk')}</span>
+          <span style={{ fontSize: '0.75rem', color: theme.textSub }}>{t('dora_change_risk')}</span>
           <span style={{
             padding: '0.2rem 0.6rem', borderRadius: '9999px',
             fontSize: '0.7rem', fontWeight: '700',
@@ -503,7 +510,7 @@ function DoraCard({ wp }) {
                 {t('dora_recovery_plan')}
               </span>
             </div>
-            <p style={{ fontSize: '0.75rem', color: '#374151', lineHeight: 1.5 }}>
+            <p style={{ fontSize: '0.75rem', color: theme.textMed, lineHeight: 1.5 }}>
               {wp.recoveryPlan}
             </p>
           </div>
@@ -515,10 +522,16 @@ function DoraCard({ wp }) {
 
 // ── Main page ──────────────────────────────────────────────────────────────────
 
+const PRIORITY_COLOR = ['#CC2027', '#7C3AED', '#2563EB', '#059669'];
+const MOSCOW_COLOR = { MUST: '#DC2626', SHOULD: '#D97706', COULD: '#2563EB', WONT: '#9CA3AF' };
+const MOSCOW_BG    = { MUST: '#FEF2F2', SHOULD: '#FFF7ED', COULD: '#EFF6FF', WONT: '#F9FAFB' };
+
 function WorkplaceDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { theme } = useTheme();
+  const { user } = useAuthStore();
 
   const [workplace, setWorkplace] = useState(null);
   const [loading, setLoading]     = useState(true);
@@ -526,6 +539,11 @@ function WorkplaceDetail() {
   const [updatingIds, setUpdatingIds] = useState(new Set());
   const [regenerating, setRegenerating] = useState(false);
   const [commitModal, setCommitModal] = useState(null);
+
+  /* unified workplace */
+  const [unified, setUnified]           = useState(null);
+  const [merging, setMerging]           = useState(false);
+  const [mergeError, setMergeError]     = useState(null);
 
   /* jira */
   const [jiraConnected, setJiraConnected] = useState(false);
@@ -541,12 +559,17 @@ function WorkplaceDetail() {
   // displayWorkplace has the same shape as workplace but with AI text auto-translated
   const displayWorkplace = useTranslatedWorkplace(workplace);
 
+  const loadUnified = () => {
+    workplaceService.getUnified(id).then(setUnified).catch(() => setUnified(null));
+  };
+
   const load = async () => {
     setLoading(true);
     setError(null);
     try {
       const data = await workplaceService.getById(id);
       setWorkplace(data);
+      loadUnified();
     } catch (e) {
       setError(e.response?.data?.message || e.message);
     } finally {
@@ -593,6 +616,7 @@ function WorkplaceDetail() {
       // Reload full workplace to get updated progress/status
       const fresh = await workplaceService.getById(id);
       setWorkplace(fresh);
+      loadUnified();
     } catch (e) {
       // Revert on error
       load();
@@ -673,10 +697,26 @@ function WorkplaceDetail() {
     try {
       const fresh = await workplaceService.regenerate(workplace.taskId);
       setWorkplace(fresh);
+      loadUnified();
     } catch (e) {
       setError(e.response?.data?.message || 'Regeneration failed');
     } finally {
       setRegenerating(false);
+    }
+  };
+
+  const handleMerge = async () => {
+    setMerging(true);
+    setMergeError(null);
+    try {
+      const result = await workplaceService.merge(id);
+      setUnified(result);
+      const fresh = await workplaceService.getById(id);
+      setWorkplace(fresh);
+    } catch (e) {
+      setMergeError(e.response?.data?.message || 'Merge failed');
+    } finally {
+      setMerging(false);
     }
   };
 
@@ -704,10 +744,14 @@ function WorkplaceDetail() {
     </PageWrapper>
   );
 
-  const pct = displayWorkplace.progressPercent ?? 0;
+  const isUnified = (unified?.sections?.length ?? 0) > 1;
+  const canMerge  = isUnified && unified?.canMerge
+    && (user?.role === 'ADMIN' || user?.role === 'IT_MANAGER');
+
+  const pct = isUnified ? (unified?.overallProgress ?? 0) : (displayWorkplace.progressPercent ?? 0);
   const statusStyle = STATUS_STYLE[displayWorkplace.status] || STATUS_STYLE.ACTIVE;
-  const doneCnt = displayWorkplace.subtasks?.filter(s => s.status === 'DONE').length ?? 0;
-  const total   = displayWorkplace.subtasks?.length ?? 0;
+  const doneCnt = isUnified ? (unified?.doneSubtasks ?? 0) : (displayWorkplace.subtasks?.filter(s => s.status === 'DONE').length ?? 0);
+  const total   = isUnified ? (unified?.totalSubtasks ?? 0) : (displayWorkplace.subtasks?.length ?? 0);
 
   const hasRepo         = !!workplace.gitRepoName;
   const gitProviderLC   = workplace.gitProvider?.toLowerCase();
@@ -726,12 +770,12 @@ function WorkplaceDetail() {
           zIndex: 2000, padding: '1rem',
         }}>
           <div style={{
-            backgroundColor: 'white', borderRadius: '1rem',
+            backgroundColor: theme.cardBg, borderRadius: '1rem',
             width: '100%', maxWidth: '460px',
             boxShadow: '0 20px 60px rgba(0,0,0,0.2)', overflow: 'hidden',
           }}>
             <div style={{
-              padding: '1.25rem 1.5rem', borderBottom: '1px solid #F0F0F0',
+              padding: '1.25rem 1.5rem', borderBottom: `1px solid ${theme.border}`,
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
@@ -743,22 +787,22 @@ function WorkplaceDetail() {
                   <Link2 size={15} color="white" />
                 </div>
                 <div>
-                  <p style={{ fontSize: '0.9rem', fontWeight: '700', color: '#111827' }}>
+                  <p style={{ fontSize: '0.9rem', fontWeight: '700', color: theme.text }}>
                     {jiraPushModal.pushAll ? 'Push all subtasks to Jira' : 'Push subtask to Jira'}
                   </p>
                   {!jiraPushModal.pushAll && (
-                    <p style={{ fontSize: '0.75rem', color: '#6B7280', marginTop: '0.1rem' }}>
+                    <p style={{ fontSize: '0.75rem', color: theme.textSub, marginTop: '0.1rem' }}>
                       {jiraPushModal.subtask?.title}
                     </p>
                   )}
                   {jiraPushModal.pushAll && (
-                    <p style={{ fontSize: '0.75rem', color: '#6B7280', marginTop: '0.1rem' }}>
+                    <p style={{ fontSize: '0.75rem', color: theme.textSub, marginTop: '0.1rem' }}>
                       {workplace.subtasks?.filter(s => !s.jiraIssueKey).length} subtasks will be created
                     </p>
                   )}
                 </div>
               </div>
-              <button onClick={() => setJiraPushModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF' }}>
+              <button onClick={() => setJiraPushModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.textMuted }}>
                 <X size={18} />
               </button>
             </div>
@@ -767,7 +811,7 @@ function WorkplaceDetail() {
               <div>
                 <label style={{
                   display: 'block', fontSize: '0.75rem', fontWeight: '600',
-                  color: '#374151', marginBottom: '0.4rem',
+                  color: theme.textMed, marginBottom: '0.4rem',
                   textTransform: 'uppercase', letterSpacing: '0.05em',
                 }}>Project</label>
                 <div style={{ position: 'relative' }}>
@@ -776,9 +820,9 @@ function WorkplaceDetail() {
                     onChange={e => setPushProject(e.target.value)}
                     style={{
                       width: '100%', padding: '0.65rem 2rem 0.65rem 1rem',
-                      border: '1.5px solid #E5E7EB', borderRadius: '0.5rem',
+                      border: `1.5px solid ${theme.borderMed}`, borderRadius: '0.5rem',
                       fontSize: '0.875rem', outline: 'none', appearance: 'none',
-                      backgroundColor: '#FAFAFA', color: '#111827',
+                      backgroundColor: theme.inputBg, color: theme.text,
                       cursor: 'pointer', boxSizing: 'border-box',
                     }}
                   >
@@ -794,18 +838,18 @@ function WorkplaceDetail() {
               <div>
                 <label style={{
                   display: 'block', fontSize: '0.75rem', fontWeight: '600',
-                  color: '#374151', marginBottom: '0.4rem',
+                  color: theme.textMed, marginBottom: '0.4rem',
                   textTransform: 'uppercase', letterSpacing: '0.05em',
                 }}>Issue type</label>
                 <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  {JIRA_ISSUE_TYPES.map(t => (
-                    <button key={t} onClick={() => setPushType(t)} style={{
+                  {JIRA_ISSUE_TYPES.map(tp => (
+                    <button key={tp} onClick={() => setPushType(tp)} style={{
                       padding: '0.35rem 0.875rem', borderRadius: '0.4rem',
-                      border: `1.5px solid ${pushType === t ? '#0052CC' : '#E5E7EB'}`,
-                      backgroundColor: pushType === t ? '#EBF4FF' : 'white',
-                      color: pushType === t ? '#0052CC' : '#6B7280',
+                      border: `1.5px solid ${pushType === tp ? '#0052CC' : theme.borderMed}`,
+                      backgroundColor: pushType === tp ? '#EBF4FF' : theme.cardBg,
+                      color: pushType === tp ? '#0052CC' : theme.textSub,
                       fontSize: '0.8rem', fontWeight: '500', cursor: 'pointer',
-                    }}>{t}</button>
+                    }}>{tp}</button>
                   ))}
                 </div>
               </div>
@@ -823,13 +867,13 @@ function WorkplaceDetail() {
             </div>
 
             <div style={{
-              padding: '1rem 1.5rem', borderTop: '1px solid #F0F0F0',
+              padding: '1rem 1.5rem', borderTop: `1px solid ${theme.border}`,
               display: 'flex', justifyContent: 'flex-end', gap: '0.5rem',
             }}>
               <button onClick={() => setJiraPushModal(null)} style={{
-                padding: '0.5rem 1.1rem', backgroundColor: 'white',
-                border: '1.5px solid #E5E7EB', borderRadius: '0.5rem',
-                fontSize: '0.82rem', fontWeight: '600', color: '#6B7280', cursor: 'pointer',
+                padding: '0.5rem 1.1rem', backgroundColor: theme.cardBg,
+                border: `1.5px solid ${theme.borderMed}`, borderRadius: '0.5rem',
+                fontSize: '0.82rem', fontWeight: '600', color: theme.textSub, cursor: 'pointer',
               }}>
                 Cancel
               </button>
@@ -870,7 +914,7 @@ function WorkplaceDetail() {
         <button onClick={() => navigate('/workplace')} style={{
           display: 'flex', alignItems: 'center', gap: '0.4rem',
           border: 'none', background: 'none', cursor: 'pointer',
-          color: '#6B7280', fontSize: '0.82rem', padding: 0,
+          color: theme.textSub, fontSize: '0.82rem', padding: 0,
         }}>
           <ArrowLeft size={16} /> {t('workplace_back')}
         </button>
@@ -882,10 +926,10 @@ function WorkplaceDetail() {
           <div style={{
             display: 'flex', alignItems: 'center', gap: '0.4rem',
             padding: '0.3rem 0.75rem', borderRadius: '0.5rem',
-            border: '1px solid #E5E7EB', backgroundColor: '#F8F9FB',
+            border: `1px solid ${theme.borderMed}`, backgroundColor: theme.hoverBg,
           }}>
-            <ProviderIcon size={13} color="#374151" />
-            <span style={{ fontSize: '0.72rem', fontWeight: '600', color: '#374151', fontFamily: 'monospace' }}>
+            <ProviderIcon size={13} color={theme.textMed} />
+            <span style={{ fontSize: '0.72rem', fontWeight: '600', color: theme.textMed, fontFamily: 'monospace' }}>
               {workplace.gitRepoName}
             </span>
             <span style={{ fontSize: '0.68rem', color: '#9CA3AF' }}>→</span>
@@ -906,20 +950,20 @@ function WorkplaceDetail() {
         </span>
 
         {/* Stats */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.78rem', color: '#374151' }}>
-          <Clock size={13} color="#6B7280" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.78rem', color: theme.textMed }}>
+          <Clock size={13} color={theme.textSub} />
           <span>{displayWorkplace.totalEstimatedHours}h</span>
         </div>
-        <div style={{ fontSize: '0.78rem', color: '#374151' }}>
+        <div style={{ fontSize: '0.78rem', color: theme.textMed }}>
           {doneCnt}/{total} {t('workplace_subtasks')}
         </div>
 
         {/* Refresh */}
         <button onClick={load} style={{
           display: 'flex', alignItems: 'center', gap: '0.35rem',
-          padding: '0.4rem 0.875rem', border: '1px solid #E5E7EB',
-          borderRadius: '0.5rem', backgroundColor: 'white',
-          color: '#374151', fontSize: '0.78rem', cursor: 'pointer',
+          padding: '0.4rem 0.875rem', border: `1px solid ${theme.borderMed}`,
+          borderRadius: '0.5rem', backgroundColor: theme.cardBg,
+          color: theme.textMed, fontSize: '0.78rem', cursor: 'pointer',
         }}>
           <RefreshCw size={13} /> {t('common_refresh')}
         </button>
@@ -927,9 +971,9 @@ function WorkplaceDetail() {
         {/* Regenerate */}
         <button onClick={handleRegenerate} disabled={regenerating} style={{
           display: 'flex', alignItems: 'center', gap: '0.35rem',
-          padding: '0.4rem 0.875rem', border: '1px solid #E5E7EB',
-          borderRadius: '0.5rem', backgroundColor: 'white',
-          color: '#374151', fontSize: '0.78rem',
+          padding: '0.4rem 0.875rem', border: `1px solid ${theme.borderMed}`,
+          borderRadius: '0.5rem', backgroundColor: theme.cardBg,
+          color: theme.textMed, fontSize: '0.78rem',
           cursor: regenerating ? 'not-allowed' : 'pointer',
           opacity: regenerating ? 0.6 : 1,
         }}>
@@ -938,6 +982,45 @@ function WorkplaceDetail() {
             : <RefreshCw size={13} />}
           {t('workplace_regenerate')}
         </button>
+
+        {/* Unified badge */}
+        {isUnified && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '0.35rem',
+            padding: '0.3rem 0.75rem', borderRadius: '0.5rem',
+            backgroundColor: '#F5F3FF', border: '1px solid #DDD6FE',
+            color: '#7C3AED', fontSize: '0.72rem', fontWeight: '700',
+          }}>
+            <Layers size={12} />
+            Unified Workspace
+          </div>
+        )}
+
+        {/* Merge Workplaces — IT_MANAGER/ADMIN when linked workplaces exist */}
+        {canMerge && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.25rem' }}>
+            <button
+              onClick={handleMerge}
+              disabled={merging}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.4rem',
+                padding: '0.4rem 0.875rem',
+                border: 'none', backgroundColor: merging ? '#9CA3AF' : '#7C3AED',
+                borderRadius: '0.5rem', color: 'white',
+                fontSize: '0.78rem', fontWeight: '600',
+                cursor: merging ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {merging
+                ? <Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} />
+                : <Layers size={13} />}
+              {merging ? 'Merging…' : 'Merge Workplaces'}
+            </button>
+            {mergeError && (
+              <span style={{ fontSize: '0.68rem', color: '#DC2626' }}>{mergeError}</span>
+            )}
+          </div>
+        )}
 
         {/* Push All to Jira — when connected and there are unlinked subtasks */}
         {jiraConnected && workplace.subtasks?.some(s => !s.jiraIssueKey) && (
@@ -976,23 +1059,24 @@ function WorkplaceDetail() {
 
       {/* Progress bar */}
       <div style={{
-        backgroundColor: 'white', borderRadius: '0.75rem',
-        border: '1px solid #F0F0F0', padding: '1rem 1.25rem',
+        backgroundColor: theme.cardBg, borderRadius: '0.75rem',
+        border: `1px solid ${theme.border}`, padding: '1rem 1.25rem',
         marginBottom: '1.25rem',
         boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-          <span style={{ fontSize: '0.82rem', fontWeight: '600', color: '#374151' }}>
-            {t('workplace_progress')}
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.82rem', fontWeight: '600', color: theme.textMed }}>
+            {isUnified && <Layers size={13} color="#7C3AED" />}
+            {isUnified ? 'Overall Progress' : t('workplace_progress')}
           </span>
           <span style={{
             fontSize: '0.9rem', fontWeight: '800',
-            color: pct === 100 ? '#16A34A' : '#CC2027',
+            color: pct === 100 ? '#16A34A' : (isUnified ? '#7C3AED' : '#CC2027'),
           }}>
-            {pct}%
+            {doneCnt}/{total} · {pct}%
           </span>
         </div>
-        <div style={{ height: '10px', backgroundColor: '#F3F4F6', borderRadius: '9999px', overflow: 'hidden' }}>
+        <div style={{ height: '10px', backgroundColor: theme.tagBg, borderRadius: '9999px', overflow: 'hidden' }}>
           <div style={{
             height: '100%', borderRadius: '9999px',
             width: `${pct}%`,
@@ -1002,46 +1086,138 @@ function WorkplaceDetail() {
         </div>
       </div>
 
-      {/* Main 3-column grid */}
+      {/* Main grid */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '1.25rem', alignItems: 'start' }}>
 
-        {/* LEFT — Subtasks */}
+        {/* LEFT — Subtasks (unified sections or single task) */}
         <div>
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: '0.5rem',
-            marginBottom: '0.875rem',
-          }}>
-            <BookOpen size={16} color="#CC2027" />
-            <h2 style={{ fontSize: '0.9rem', fontWeight: '700', color: '#111827' }}>
-              {t('workplace_subtasks')}
-            </h2>
-            <span style={{
-              padding: '0.1rem 0.5rem', borderRadius: '9999px',
-              fontSize: '0.65rem', fontWeight: '700',
-              backgroundColor: '#FEF2F2', color: '#CC2027',
-            }}>
-              {total}
-            </span>
-          </div>
+          {isUnified ? (
+            unified.sections.map((section, idx) => {
+              const color = PRIORITY_COLOR[idx] || '#6B7280';
+              const sDone  = section.subtasks.filter(s => s.status === 'DONE').length;
+              const sTotal = section.subtasks.length;
+              const mColor = MOSCOW_COLOR[section.moscowLabel] || '#6B7280';
+              const mBg    = MOSCOW_BG[section.moscowLabel]    || '#F9FAFB';
+              return (
+                <div key={section.workplaceId} style={{ marginBottom: '1.25rem' }}>
+                  {/* Section header */}
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap',
+                    padding: '0.75rem 1rem',
+                    backgroundColor: `${color}10`,
+                    borderRadius: '0.75rem 0.75rem 0 0',
+                    border: `1.5px solid ${color}30`, borderBottom: 'none',
+                  }}>
+                    <span style={{
+                      fontSize: '0.62rem', fontWeight: '800', letterSpacing: '0.06em',
+                      backgroundColor: color, color: 'white',
+                      padding: '0.15rem 0.55rem', borderRadius: '9999px',
+                    }}>
+                      #{section.priority}
+                    </span>
+                    <h3 style={{
+                      fontSize: '0.9rem', fontWeight: '700', color: theme.text,
+                      flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>
+                      {section.taskTitle}
+                    </h3>
+                    {section.moscowLabel && (
+                      <span style={{
+                        padding: '0.15rem 0.5rem', borderRadius: '9999px',
+                        fontSize: '0.65rem', fontWeight: '700',
+                        backgroundColor: mBg, color: mColor,
+                      }}>
+                        {section.moscowLabel}
+                      </span>
+                    )}
+                    <span style={{ fontSize: '0.72rem', color: theme.textSub, whiteSpace: 'nowrap' }}>
+                      {sDone}/{sTotal}
+                    </span>
+                    <div style={{
+                      width: '72px', height: '6px',
+                      backgroundColor: theme.borderMed, borderRadius: '9999px',
+                      overflow: 'hidden', flexShrink: 0,
+                    }}>
+                      <div style={{
+                        height: '100%', borderRadius: '9999px',
+                        width: `${section.progressPercent}%`,
+                        backgroundColor: color,
+                        transition: 'width 0.4s ease',
+                      }} />
+                    </div>
+                  </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {displayWorkplace.subtasks?.map(subtask => (
-              <SubtaskCard
-                key={subtask.id}
-                subtask={subtask}
-                onStatusChange={handleStatusChange}
-                updating={updatingIds.has(subtask.id)}
-                repoName={workplace.gitRepoName}
-                provider={gitProviderLC}
-                onCommit={(s) => setCommitModal({ subtask: s })}
-                jiraConnected={jiraConnected}
-                onJiraPush={openPushModal}
-                isPushingJira={pushingSubtaskId === subtask.id}
-                onJiraSync={handleJiraForceSync}
-                isSyncingJira={syncingJiraId === subtask.id}
-              />
-            ))}
-          </div>
+                  {/* Subtask list */}
+                  <div style={{
+                    border: `1.5px solid ${color}30`,
+                    borderTop: 'none',
+                    borderRadius: '0 0 0.75rem 0.75rem',
+                    padding: '0.875rem',
+                    display: 'flex', flexDirection: 'column', gap: '0.75rem',
+                    backgroundColor: theme.cardBg,
+                  }}>
+                    {section.subtasks.length === 0 ? (
+                      <p style={{ fontSize: '0.82rem', color: theme.textMuted, textAlign: 'center', padding: '1rem 0' }}>
+                        No subtasks in this section yet
+                      </p>
+                    ) : section.subtasks.map(subtask => (
+                      <SubtaskCard
+                        key={subtask.id}
+                        subtask={subtask}
+                        onStatusChange={handleStatusChange}
+                        updating={updatingIds.has(subtask.id)}
+                        repoName={workplace.gitRepoName}
+                        provider={gitProviderLC}
+                        onCommit={(s) => setCommitModal({ subtask: s })}
+                        jiraConnected={jiraConnected}
+                        onJiraPush={openPushModal}
+                        isPushingJira={pushingSubtaskId === subtask.id}
+                        onJiraSync={handleJiraForceSync}
+                        isSyncingJira={syncingJiraId === subtask.id}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: '0.5rem',
+                marginBottom: '0.875rem',
+              }}>
+                <BookOpen size={16} color="#CC2027" />
+                <h2 style={{ fontSize: '0.9rem', fontWeight: '700', color: theme.text }}>
+                  {t('workplace_subtasks')}
+                </h2>
+                <span style={{
+                  padding: '0.1rem 0.5rem', borderRadius: '9999px',
+                  fontSize: '0.65rem', fontWeight: '700',
+                  backgroundColor: '#FEF2F2', color: '#CC2027',
+                }}>
+                  {total}
+                </span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {displayWorkplace.subtasks?.map(subtask => (
+                  <SubtaskCard
+                    key={subtask.id}
+                    subtask={subtask}
+                    onStatusChange={handleStatusChange}
+                    updating={updatingIds.has(subtask.id)}
+                    repoName={workplace.gitRepoName}
+                    provider={gitProviderLC}
+                    onCommit={(s) => setCommitModal({ subtask: s })}
+                    jiraConnected={jiraConnected}
+                    onJiraPush={openPushModal}
+                    isPushingJira={pushingSubtaskId === subtask.id}
+                    onJiraSync={handleJiraForceSync}
+                    isSyncingJira={syncingJiraId === subtask.id}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         {/* RIGHT — Plan, Tips, Benchmarks, DORA */}

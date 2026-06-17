@@ -156,6 +156,7 @@ const EN = {
   dora_no_data_hint: 'No DORA indicators yet. Go to Backlog → click DORA on any scored task to add indicators.',
   dora_indicators: 'indicators',
   nav_workplace: 'Workplace',
+  nav_task_relations: 'Task Relations',
   workplace_title: 'Workplace',
   workplace_subtitle: 'AI-powered task planning & progress tracking',
   workplace_generate_btn: 'Generate Workplace',

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Brain, AlertCircle, RefreshCw, Edit3, Activity, Trash2, BriefcaseBusiness, Scale, Loader2, CheckSquare, Square, Link2, ExternalLink, Plus, X, ChevronDown, Download, Layers } from 'lucide-react';
+import { AlertCircle, RefreshCw, Edit3, Activity, Trash2, BriefcaseBusiness, Scale, Loader2, CheckSquare, Square, Link2, ExternalLink, Plus, X, ChevronDown, Download, Layers, Lock } from 'lucide-react';
+import EmptyState from '../components/ui/EmptyState';
 import DoraModal from '../components/dashboard/DoraModal';
 import PageWrapper from '../components/layout/PageWrapper';
 import taskService from '../services/taskService';
@@ -9,8 +10,10 @@ import jiraService from '../services/jiraService';
 import OverrideModal from '../components/scoring/OverrideModal';
 import BulkMoscowModal from '../components/backlog/BulkMoscowModal';
 import overrideService from '../services/overrideService';
+import dependencyService from '../services/dependencyService';
 import { useLanguage, useTranslatedTask, useDynamicTranslation } from '../i18n/LanguageContext';
 import useAuthStore from '../store/authStore';
+import { useTheme } from '../contexts/ThemeContext';
 
 const JIRA_ISSUE_TYPES = ['Task', 'Bug', 'Story', 'Epic'];
 
@@ -99,8 +102,9 @@ function downloadTasksCSV(rows) {
 }
 
 // Each card auto-translates all AI-generated text when expanded
-function BacklogTaskCard({ task, index, isExpanded, onToggle, onOverride, onDora, isAdmin, onDelete, isSelectedForCompare, onToggleCompare, compareCount, jiraConnected, onJiraPush, onJiraSync, isSyncingJira, txData, isSelected, onToggleSelect }) {
+function BacklogTaskCard({ task, index, isExpanded, onToggle, onOverride, onDora, isAdmin, onDelete, isSelectedForCompare, onToggleCompare, compareCount, jiraConnected, onJiraPush, onJiraSync, isSyncingJira, txData, isSelected, onToggleSelect, isBlocked }) {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const tx = useTranslatedTask(task, isExpanded);
   const [generatingWp, setGeneratingWp] = useState(false);
@@ -124,11 +128,12 @@ function BacklogTaskCard({ task, index, isExpanded, onToggle, onOverride, onDora
 
   return (
     <div style={{
-      backgroundColor: 'white', borderRadius: '0.75rem',
-      border: '1px solid #F0F0F0',
+      backgroundColor: theme.cardBg,
+      borderRadius: '0.75rem',
+      border: isBlocked ? '1px solid #FECACA' : `1px solid ${theme.border}`,
       boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
       overflow: 'hidden',
-      borderLeft: `4px solid ${moscow.color}`,
+      borderLeft: `4px solid ${isBlocked ? '#CC2027' : moscow.color}`,
     }}>
       <div
         onClick={onToggle}
@@ -142,8 +147,8 @@ function BacklogTaskCard({ task, index, isExpanded, onToggle, onOverride, onDora
           onClick={e => { e.stopPropagation(); onToggleSelect(task.id); }}
           style={{
             width: '18px', height: '18px', borderRadius: '4px', flexShrink: 0,
-            border: `2px solid ${isSelected ? '#CC2027' : '#D1D5DB'}`,
-            backgroundColor: isSelected ? '#CC2027' : 'white',
+            border: `2px solid ${isSelected ? '#CC2027' : theme.borderMed}`,
+            backgroundColor: isSelected ? '#CC2027' : theme.cardBg,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer', transition: 'all 0.15s',
           }}
@@ -169,8 +174,19 @@ function BacklogTaskCard({ task, index, isExpanded, onToggle, onOverride, onDora
         {/* Title + badges */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.3rem' }}>
+            {isBlocked && (
+              <span title="This task is blocked by a dependency" style={{
+                display: 'inline-flex', alignItems: 'center', gap: '3px',
+                fontSize: '0.65rem', fontWeight: '700',
+                backgroundColor: '#FFF1F2', color: '#CC2027',
+                border: '1px solid #FECACA',
+                padding: '1px 6px', borderRadius: '9999px', flexShrink: 0,
+              }}>
+                <Lock size={9} /> BLOCKED
+              </span>
+            )}
             <p style={{
-              fontSize: '0.875rem', fontWeight: '600', color: '#111827',
+              fontSize: '0.875rem', fontWeight: '600', color: theme.text,
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}>
               {txData?.[task.title] || task.title}
@@ -186,10 +202,10 @@ function BacklogTaskCard({ task, index, isExpanded, onToggle, onOverride, onDora
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
             <span style={{
               fontSize: '0.72rem',
-              color: task.taskTypeColor || '#6B7280',
-              backgroundColor: task.taskTypeColor ? `${task.taskTypeColor}15` : '#F3F4F6',
+              color: task.taskTypeColor || theme.textSub,
+              backgroundColor: task.taskTypeColor ? `${task.taskTypeColor}15` : theme.tagBg,
               padding: '0.1rem 0.5rem', borderRadius: '4px',
-              border: `1px solid ${task.taskTypeColor ? `${task.taskTypeColor}30` : '#E5E7EB'}`,
+              border: `1px solid ${task.taskTypeColor ? `${task.taskTypeColor}30` : theme.borderMed}`,
               fontWeight: '500',
             }}>
               {txData?.[task.taskType] || task.taskType}
@@ -239,8 +255,8 @@ function BacklogTaskCard({ task, index, isExpanded, onToggle, onOverride, onDora
             style={{
               display: 'flex', alignItems: 'center', gap: '0.35rem',
               padding: '0.4rem 0.75rem',
-              backgroundColor: isSelectedForCompare ? '#F5F3FF' : 'white',
-              border: `1.5px solid ${isSelectedForCompare ? '#C4B5FD' : '#E5E7EB'}`,
+              backgroundColor: isSelectedForCompare ? '#F5F3FF' : theme.cardBg,
+              border: `1.5px solid ${isSelectedForCompare ? '#C4B5FD' : theme.borderMed}`,
               borderRadius: '0.5rem', fontSize: '0.75rem', fontWeight: '500',
               color: isSelectedForCompare ? '#7C3AED' : '#6B7280',
               cursor: compareCount >= 6 && !isSelectedForCompare ? 'not-allowed' : 'pointer',
@@ -270,10 +286,10 @@ function BacklogTaskCard({ task, index, isExpanded, onToggle, onOverride, onDora
               onClick={(e) => { e.stopPropagation(); onOverride(); }}
               style={{
                 display: 'flex', alignItems: 'center', gap: '0.35rem',
-                padding: '0.4rem 0.75rem', backgroundColor: 'white',
-                border: '1.5px solid #E5E7EB', borderRadius: '0.5rem',
+                padding: '0.4rem 0.75rem', backgroundColor: theme.cardBg,
+                border: `1.5px solid ${theme.borderMed}`, borderRadius: '0.5rem',
                 fontSize: '0.75rem', fontWeight: '500',
-                color: '#6B7280', cursor: 'pointer',
+                color: theme.textSub, cursor: 'pointer',
               }}
             >
               <Edit3 size={12} />
@@ -285,7 +301,7 @@ function BacklogTaskCard({ task, index, isExpanded, onToggle, onOverride, onDora
               onClick={(e) => { e.stopPropagation(); onDelete(); }}
               style={{
                 display: 'flex', alignItems: 'center', gap: '0.35rem',
-                padding: '0.4rem 0.75rem', backgroundColor: 'white',
+                padding: '0.4rem 0.75rem', backgroundColor: theme.cardBg,
                 border: '1.5px solid #FECACA', borderRadius: '0.5rem',
                 fontSize: '0.75rem', fontWeight: '500',
                 color: '#DC2626', cursor: 'pointer',
@@ -322,8 +338,8 @@ function BacklogTaskCard({ task, index, isExpanded, onToggle, onOverride, onDora
                   style={{
                     display: 'flex', alignItems: 'center',
                     padding: '0.4rem', borderRadius: '0.45rem',
-                    border: '1.5px solid #E5E7EB', backgroundColor: 'white',
-                    color: '#6B7280', cursor: isSyncingJira ? 'not-allowed' : 'pointer',
+                    border: `1.5px solid ${theme.borderMed}`, backgroundColor: theme.cardBg,
+                    color: theme.textSub, cursor: isSyncingJira ? 'not-allowed' : 'pointer',
                     opacity: isSyncingJira ? 0.5 : 1,
                   }}
                 >
@@ -355,23 +371,23 @@ function BacklogTaskCard({ task, index, isExpanded, onToggle, onOverride, onDora
 
       {/* Expanded detail — uses tx (translated task) for all AI-generated text */}
       {isExpanded && (
-        <div style={{ padding: '1.25rem', borderTop: '1px solid #F9FAFB', backgroundColor: '#FAFAFA' }}>
+        <div style={{ padding: '1.25rem', borderTop: `1px solid ${theme.border}`, backgroundColor: theme.hoverBg }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
             <div>
               <p style={{
-                fontSize: '0.78rem', fontWeight: '600', color: '#374151',
+                fontSize: '0.78rem', fontWeight: '600', color: theme.textMed,
                 marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em',
               }}>
                 {t('task_description')}
               </p>
-              <p style={{ fontSize: '0.825rem', color: '#6B7280', lineHeight: '1.6', marginBottom: '1rem' }}>
+              <p style={{ fontSize: '0.825rem', color: theme.textSub, lineHeight: '1.6', marginBottom: '1rem' }}>
                 {tx.description}
               </p>
 
               {task.industryContext && (
                 <>
                   <p style={{
-                    fontSize: '0.78rem', fontWeight: '600', color: '#374151',
+                    fontSize: '0.78rem', fontWeight: '600', color: theme.textMed,
                     marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em',
                   }}>
                     {t('ai_industry_context')}
@@ -390,7 +406,7 @@ function BacklogTaskCard({ task, index, isExpanded, onToggle, onOverride, onDora
 
             <div>
               <p style={{
-                fontSize: '0.78rem', fontWeight: '600', color: '#374151',
+                fontSize: '0.78rem', fontWeight: '600', color: theme.textMed,
                 marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em',
               }}>
                 {t('rice_breakdown')}
@@ -418,22 +434,22 @@ function BacklogTaskCard({ task, index, isExpanded, onToggle, onOverride, onDora
               </div>
 
               <div style={{
-                padding: '0.75rem', backgroundColor: 'white',
-                borderRadius: '0.5rem', border: '1px solid #F0F0F0',
+                padding: '0.75rem', backgroundColor: theme.cardBg,
+                borderRadius: '0.5rem', border: `1px solid ${theme.border}`,
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               }}>
                 <div>
-                  <p style={{ fontSize: '0.68rem', color: '#9CA3AF' }}>{t('rice_score')}</p>
-                  <p style={{ fontSize: '1rem', fontWeight: '700', color: '#111827' }}>{task.riceScore?.toFixed(2)}</p>
+                  <p style={{ fontSize: '0.68rem', color: theme.textMuted }}>{t('rice_score')}</p>
+                  <p style={{ fontSize: '1rem', fontWeight: '700', color: theme.text }}>{task.riceScore?.toFixed(2)}</p>
                 </div>
-                <div style={{ color: '#9CA3AF', fontSize: '0.8rem' }}>×</div>
+                <div style={{ color: theme.textMuted, fontSize: '0.8rem' }}>×</div>
                 <div>
-                  <p style={{ fontSize: '0.68rem', color: '#9CA3AF' }}>{t('multiplier')}</p>
-                  <p style={{ fontSize: '1rem', fontWeight: '700', color: '#111827' }}>{multiplier.toFixed(2)}</p>
+                  <p style={{ fontSize: '0.68rem', color: theme.textMuted }}>{t('multiplier')}</p>
+                  <p style={{ fontSize: '1rem', fontWeight: '700', color: theme.text }}>{multiplier.toFixed(2)}</p>
                 </div>
-                <div style={{ color: '#9CA3AF', fontSize: '0.8rem' }}>═</div>
+                <div style={{ color: theme.textMuted, fontSize: '0.8rem' }}>═</div>
                 <div>
-                  <p style={{ fontSize: '0.68rem', color: '#9CA3AF' }}>{t('final_score')}</p>
+                  <p style={{ fontSize: '0.68rem', color: theme.textMuted }}>{t('final_score')}</p>
                   <p style={{ fontSize: '1.25rem', fontWeight: '700', color: '#CC2027' }}>{task.finalScore?.toFixed(1)}</p>
                 </div>
               </div>
@@ -468,10 +484,13 @@ function BacklogTaskCard({ task, index, isExpanded, onToggle, onOverride, onDora
 
 function Backlog() {
   const [tasks, setTasks] = useState([]);
+  const [blockedIds, setBlockedIds] = useState(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [expandedId, setExpandedId] = useState(null);
-  const [filterMoscow, setFilterMoscow] = useState('ALL');
+  const [filterMoscow, setFilterMoscow] = useState(
+    () => sessionStorage.getItem('backlog_filter_moscow') || 'ALL'
+  );
   const [overrideTask, setOverrideTask] = useState(null);
   const [doraTask, setDoraTask] = useState(null);
   const [compareSelected, setCompareSelected] = useState(new Set());
@@ -496,6 +515,7 @@ function Backlog() {
   const [syncingJiraId, setSyncingJiraId] = useState(null);
 
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const isAdmin = user?.role === 'ADMIN';
@@ -583,12 +603,17 @@ function Backlog() {
         : await taskService.getMyTasks();
       const sorted = data.sort((a, b) => (b.finalScore || 0) - (a.finalScore || 0));
       setTasks(sorted);
+      dependencyService.getBlockedIds().then(ids => setBlockedIds(new Set(ids))).catch(() => {});
     } catch (err) {
       setError('Failed to load tasks. Make sure the backend is running.');
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    sessionStorage.setItem('backlog_filter_moscow', filterMoscow);
+  }, [filterMoscow]);
 
   useEffect(() => {
     loadTasks();
@@ -679,15 +704,15 @@ function Backlog() {
       {/* MoSCoW ratio bar — only meaningful for privileged users seeing all tasks */}
       {isPrivileged && total > 0 && (
         <div style={{
-          backgroundColor: 'white', borderRadius: '0.75rem',
+          backgroundColor: theme.cardBg, borderRadius: '0.75rem',
           padding: '1.25rem 1.5rem', marginBottom: '1.25rem',
-          border: '1px solid #F0F0F0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+          border: `1px solid ${theme.border}`, boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-            <p style={{ fontSize: '0.8rem', fontWeight: '600', color: '#374151' }}>
+            <p style={{ fontSize: '0.8rem', fontWeight: '600', color: theme.textMed }}>
               {t('moscow_distribution')}
             </p>
-            <p style={{ fontSize: '0.72rem', color: '#9CA3AF' }}>
+            <p style={{ fontSize: '0.72rem', color: theme.textMuted }}>
               {t('moscow_target')}
             </p>
           </div>
@@ -712,7 +737,7 @@ function Backlog() {
             ].map(({ key, color, label }) => (
               <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                 <div style={{ width: '8px', height: '8px', borderRadius: '2px', backgroundColor: color }} />
-                <span style={{ fontSize: '0.72rem', color: '#6B7280' }}>
+                <span style={{ fontSize: '0.72rem', color: theme.textSub }}>
                   {label}: {total > 0 ? Math.round((ratio[key] / total) * 100) : 0}%
                 </span>
               </div>
@@ -730,8 +755,8 @@ function Backlog() {
             title={allFilteredSelected ? 'Deselect all' : 'Select all'}
             style={{
               width: '18px', height: '18px', borderRadius: '4px', flexShrink: 0,
-              border: `2px solid ${allFilteredSelected ? '#CC2027' : '#D1D5DB'}`,
-              backgroundColor: allFilteredSelected ? '#CC2027' : 'white',
+              border: `2px solid ${allFilteredSelected ? '#CC2027' : theme.borderMed}`,
+              backgroundColor: allFilteredSelected ? '#CC2027' : theme.cardBg,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               cursor: 'pointer', transition: 'all 0.15s', marginRight: '0.25rem',
             }}
@@ -742,9 +767,9 @@ function Backlog() {
             <button key={f} onClick={() => setFilterMoscow(f)}
               style={{
                 padding: '0.35rem 0.85rem', borderRadius: '9999px', border: '1.5px solid',
-                borderColor: filterMoscow === f ? '#CC2027' : '#E5E7EB',
-                backgroundColor: filterMoscow === f ? '#FEF2F2' : 'white',
-                color: filterMoscow === f ? '#CC2027' : '#6B7280',
+                borderColor: filterMoscow === f ? '#CC2027' : theme.borderMed,
+                backgroundColor: filterMoscow === f ? '#FEF2F2' : theme.cardBg,
+                color: filterMoscow === f ? '#CC2027' : theme.textSub,
                 fontSize: '0.78rem', fontWeight: '600', cursor: 'pointer',
               }}>
               {f === 'ALL' ? t('filter_all_tasks') : f}
@@ -753,9 +778,9 @@ function Backlog() {
         </div>
         <button onClick={loadTasks} style={{
           display: 'flex', alignItems: 'center', gap: '0.4rem',
-          padding: '0.4rem 0.85rem', backgroundColor: 'white',
-          border: '1.5px solid #E5E7EB', borderRadius: '0.5rem',
-          fontSize: '0.78rem', color: '#6B7280', cursor: 'pointer',
+          padding: '0.4rem 0.85rem', backgroundColor: theme.cardBg,
+          border: `1.5px solid ${theme.borderMed}`, borderRadius: '0.5rem',
+          fontSize: '0.78rem', color: theme.textSub, cursor: 'pointer',
         }}>
           <RefreshCw size={13} />
           {t('refresh')}
@@ -780,17 +805,12 @@ function Backlog() {
       )}
 
       {!isLoading && filtered.length === 0 && (
-        <div style={{
-          textAlign: 'center', padding: '3rem',
-          backgroundColor: 'white', borderRadius: '0.75rem', border: '1px solid #F0F0F0',
-        }}>
-          <Brain size={32} color="#E5E7EB" style={{ marginBottom: '0.75rem' }} />
-          <p style={{ fontWeight: '600', color: '#374151', marginBottom: '0.25rem' }}>
-            {t('backlog_empty_title')}
-          </p>
-          <p style={{ color: '#9CA3AF', fontSize: '0.875rem' }}>
-            {t('backlog_empty_subtitle')}
-          </p>
+        <div style={{ backgroundColor: theme.cardBg, borderRadius: '0.75rem', border: `1px solid ${theme.border}` }}>
+          <EmptyState
+            variant="tasks"
+            title={t('backlog_empty_title')}
+            subtitle={t('backlog_empty_subtitle')}
+          />
         </div>
       )}
 
@@ -816,6 +836,7 @@ function Backlog() {
             txData={txData}
             isSelected={bulkSelected.has(task.id)}
             onToggleSelect={toggleBulk}
+            isBlocked={blockedIds.has(task.id)}
           />
         ))}
       </div>
@@ -977,39 +998,39 @@ function Backlog() {
           zIndex: 2000, padding: '1rem',
         }}>
           <div style={{
-            backgroundColor: 'white', borderRadius: '1rem',
+            backgroundColor: theme.cardBg, borderRadius: '1rem',
             width: '100%', maxWidth: '420px',
             boxShadow: '0 20px 60px rgba(0,0,0,0.2)', overflow: 'hidden',
           }}>
-            <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #F0F0F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ padding: '1.25rem 1.5rem', borderBottom: `1px solid ${theme.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <p style={{ fontSize: '0.9rem', fontWeight: '700', color: '#111827' }}>Bulk Push to Jira</p>
-                <p style={{ fontSize: '0.78rem', color: '#9CA3AF', marginTop: '0.15rem' }}>{bulkEligibleJira.length} task{bulkEligibleJira.length !== 1 ? 's' : ''} will be created</p>
+                <p style={{ fontSize: '0.9rem', fontWeight: '700', color: theme.text }}>Bulk Push to Jira</p>
+                <p style={{ fontSize: '0.78rem', color: theme.textMuted, marginTop: '0.15rem' }}>{bulkEligibleJira.length} task{bulkEligibleJira.length !== 1 ? 's' : ''} will be created</p>
               </div>
               <button onClick={() => setBulkJiraOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF' }}><X size={18} /></button>
             </div>
             <div style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: '#374151', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Project</label>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: theme.textMed, marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Project</label>
                 <div style={{ position: 'relative' }}>
                   <select value={bulkJiraProject} onChange={e => setBulkJiraProject(e.target.value)}
-                    style={{ width: '100%', padding: '0.65rem 2rem 0.65rem 1rem', border: '1.5px solid #E5E7EB', borderRadius: '0.5rem', fontSize: '0.875rem', outline: 'none', backgroundColor: '#FAFAFA', color: '#111827', appearance: 'none', boxSizing: 'border-box' }}>
+                    style={{ width: '100%', padding: '0.65rem 2rem 0.65rem 1rem', border: `1.5px solid ${theme.borderMed}`, borderRadius: '0.5rem', fontSize: '0.875rem', outline: 'none', backgroundColor: theme.inputBg, color: theme.text, appearance: 'none', boxSizing: 'border-box' }}>
                     {jiraProjects.map(p => <option key={p.key} value={p.key}>{p.name} ({p.key})</option>)}
                   </select>
                   <ChevronDown size={14} color="#9CA3AF" style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
                 </div>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: '#374151', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Issue type</label>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: theme.textMed, marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Issue type</label>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   {JIRA_ISSUE_TYPES.map(tp => (
-                    <button key={tp} onClick={() => setBulkJiraType(tp)} style={{ padding: '0.35rem 0.875rem', borderRadius: '0.4rem', border: `1.5px solid ${bulkJiraType === tp ? '#0052CC' : '#E5E7EB'}`, backgroundColor: bulkJiraType === tp ? '#EBF4FF' : 'white', color: bulkJiraType === tp ? '#0052CC' : '#6B7280', fontSize: '0.8rem', fontWeight: '500', cursor: 'pointer' }}>{tp}</button>
+                    <button key={tp} onClick={() => setBulkJiraType(tp)} style={{ padding: '0.35rem 0.875rem', borderRadius: '0.4rem', border: `1.5px solid ${bulkJiraType === tp ? '#0052CC' : theme.borderMed}`, backgroundColor: bulkJiraType === tp ? '#EBF4FF' : theme.cardBg, color: bulkJiraType === tp ? '#0052CC' : theme.textSub, fontSize: '0.8rem', fontWeight: '500', cursor: 'pointer' }}>{tp}</button>
                   ))}
                 </div>
               </div>
             </div>
-            <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid #F0F0F0', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-              <button onClick={() => setBulkJiraOpen(false)} style={{ padding: '0.5rem 1.1rem', backgroundColor: 'white', border: '1.5px solid #E5E7EB', borderRadius: '0.5rem', fontSize: '0.82rem', fontWeight: '600', color: '#6B7280', cursor: 'pointer' }}>Cancel</button>
+            <div style={{ padding: '1rem 1.5rem', borderTop: `1px solid ${theme.border}`, display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+              <button onClick={() => setBulkJiraOpen(false)} style={{ padding: '0.5rem 1.1rem', backgroundColor: theme.cardBg, border: `1.5px solid ${theme.borderMed}`, borderRadius: '0.5rem', fontSize: '0.82rem', fontWeight: '600', color: theme.textSub, cursor: 'pointer' }}>Cancel</button>
               <button onClick={handleBulkJiraPush} disabled={bulkWorking || !bulkJiraProject} style={{ padding: '0.5rem 1.25rem', backgroundColor: bulkWorking ? '#9CA3AF' : '#0052CC', color: 'white', border: 'none', borderRadius: '0.5rem', fontSize: '0.82rem', fontWeight: '600', cursor: bulkWorking ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                 {bulkWorking ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Plus size={14} />}
                 {bulkWorking ? 'Pushing…' : `Create ${bulkEligibleJira.length} issues`}
@@ -1034,13 +1055,13 @@ function Backlog() {
           zIndex: 2000, padding: '1rem',
         }}>
           <div style={{
-            backgroundColor: 'white', borderRadius: '1rem',
+            backgroundColor: theme.cardBg, borderRadius: '1rem',
             width: '100%', maxWidth: '460px',
             boxShadow: '0 20px 60px rgba(0,0,0,0.2)', overflow: 'hidden',
           }}>
             {/* Header */}
             <div style={{
-              padding: '1.25rem 1.5rem', borderBottom: '1px solid #F0F0F0',
+              padding: '1.25rem 1.5rem', borderBottom: `1px solid ${theme.border}`,
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
@@ -1051,7 +1072,7 @@ function Backlog() {
                 }}>
                   <Plus size={15} color="white" />
                 </div>
-                <p style={{ fontSize: '0.9rem', fontWeight: '700', color: '#111827' }}>
+                <p style={{ fontSize: '0.9rem', fontWeight: '700', color: theme.text }}>
                   Push to Jira
                 </p>
               </div>
@@ -1062,14 +1083,14 @@ function Backlog() {
 
             {/* Body */}
             <div style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
-              <p style={{ fontSize: '0.8rem', color: '#6B7280' }}>
-                Creating Jira issue for: <strong style={{ color: '#111827' }}>{pushModal.title}</strong>
+              <p style={{ fontSize: '0.8rem', color: theme.textSub }}>
+                Creating Jira issue for: <strong style={{ color: theme.text }}>{pushModal.title}</strong>
               </p>
 
               <div>
                 <label style={{
                   display: 'block', fontSize: '0.75rem', fontWeight: '600',
-                  color: '#374151', marginBottom: '0.4rem',
+                  color: theme.textMed, marginBottom: '0.4rem',
                   textTransform: 'uppercase', letterSpacing: '0.05em',
                 }}>Project</label>
                 <div style={{ position: 'relative' }}>
@@ -1078,9 +1099,9 @@ function Backlog() {
                     onChange={e => setPushProject(e.target.value)}
                     style={{
                       width: '100%', padding: '0.65rem 2rem 0.65rem 1rem',
-                      border: '1.5px solid #E5E7EB', borderRadius: '0.5rem',
+                      border: `1.5px solid ${theme.borderMed}`, borderRadius: '0.5rem',
                       fontSize: '0.875rem', outline: 'none',
-                      backgroundColor: '#FAFAFA', color: '#111827',
+                      backgroundColor: theme.inputBg, color: theme.text,
                       appearance: 'none', cursor: 'pointer', boxSizing: 'border-box',
                     }}
                   >
@@ -1096,16 +1117,16 @@ function Backlog() {
               <div>
                 <label style={{
                   display: 'block', fontSize: '0.75rem', fontWeight: '600',
-                  color: '#374151', marginBottom: '0.4rem',
+                  color: theme.textMed, marginBottom: '0.4rem',
                   textTransform: 'uppercase', letterSpacing: '0.05em',
                 }}>Issue type</label>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   {JIRA_ISSUE_TYPES.map(t => (
                     <button key={t} onClick={() => setPushType(t)} style={{
                       padding: '0.35rem 0.875rem', borderRadius: '0.4rem',
-                      border: `1.5px solid ${pushType === t ? '#0052CC' : '#E5E7EB'}`,
-                      backgroundColor: pushType === t ? '#EBF4FF' : 'white',
-                      color: pushType === t ? '#0052CC' : '#6B7280',
+                      border: `1.5px solid ${pushType === t ? '#0052CC' : theme.borderMed}`,
+                      backgroundColor: pushType === t ? '#EBF4FF' : theme.cardBg,
+                      color: pushType === t ? '#0052CC' : theme.textSub,
                       fontSize: '0.8rem', fontWeight: '500', cursor: 'pointer',
                     }}>
                       {t}
@@ -1117,7 +1138,7 @@ function Backlog() {
               <div>
                 <label style={{
                   display: 'block', fontSize: '0.75rem', fontWeight: '600',
-                  color: '#374151', marginBottom: '0.4rem',
+                  color: theme.textMed, marginBottom: '0.4rem',
                   textTransform: 'uppercase', letterSpacing: '0.05em',
                 }}>Summary</label>
                 <input
@@ -1126,12 +1147,12 @@ function Backlog() {
                   onChange={e => setPushSummary(e.target.value)}
                   style={{
                     width: '100%', padding: '0.65rem 1rem',
-                    border: '1.5px solid #E5E7EB', borderRadius: '0.5rem',
+                    border: `1.5px solid ${theme.borderMed}`, borderRadius: '0.5rem',
                     fontSize: '0.875rem', outline: 'none',
-                    boxSizing: 'border-box', backgroundColor: '#FAFAFA', color: '#111827',
+                    boxSizing: 'border-box', backgroundColor: theme.inputBg, color: theme.text,
                   }}
                   onFocus={e => e.target.style.borderColor = '#0052CC'}
-                  onBlur={e => e.target.style.borderColor = '#E5E7EB'}
+                  onBlur={e => e.target.style.borderColor = theme.borderMed}
                 />
               </div>
 
@@ -1149,13 +1170,13 @@ function Backlog() {
 
             {/* Footer */}
             <div style={{
-              padding: '1rem 1.5rem', borderTop: '1px solid #F0F0F0',
+              padding: '1rem 1.5rem', borderTop: `1px solid ${theme.border}`,
               display: 'flex', justifyContent: 'flex-end', gap: '0.5rem',
             }}>
               <button onClick={() => setPushModal(null)} style={{
-                padding: '0.5rem 1.1rem', backgroundColor: 'white',
-                border: '1.5px solid #E5E7EB', borderRadius: '0.5rem',
-                fontSize: '0.82rem', fontWeight: '600', color: '#6B7280', cursor: 'pointer',
+                padding: '0.5rem 1.1rem', backgroundColor: theme.cardBg,
+                border: `1.5px solid ${theme.borderMed}`, borderRadius: '0.5rem',
+                fontSize: '0.82rem', fontWeight: '600', color: theme.textSub, cursor: 'pointer',
               }}>
                 Cancel
               </button>

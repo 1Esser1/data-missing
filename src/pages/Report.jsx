@@ -8,6 +8,7 @@ import useAuthStore from '../store/authStore';
 import api from '../services/api';
 import { useLanguage } from '../i18n/LanguageContext';
 import { translateBatch } from '../i18n/translateService';
+import { useTheme } from '../contexts/ThemeContext';
 
 // ── Report content strings (translated per report language) ──────────────────
 const REPORT_STRINGS = {
@@ -595,6 +596,7 @@ const LANG_OPTIONS = [
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function ReportPage() {
+  const { theme } = useTheme();
   const navigate  = useNavigate();
   const { user }  = useAuthStore();
   const { language: globalLang } = useLanguage();
@@ -686,11 +688,11 @@ export default function ReportPage() {
       <div style={{
         marginLeft: '240px', minHeight: '100vh', display: 'flex',
         flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        backgroundColor: '#F8F9FB', gap: '1rem',
+        backgroundColor: theme.pageBg, gap: '1rem',
       }}>
         <style>{PRINT_CSS}</style>
         <RefreshCw size={32} color="#CC2027" style={{ animation: 'spin 1s linear infinite' }} />
-        <p style={{ color: '#6B7280', fontWeight: '600', fontSize: '0.875rem' }}>Loading report data…</p>
+        <p style={{ color: theme.textSub, fontWeight: '600', fontSize: '0.875rem' }}>Loading report data…</p>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
@@ -698,7 +700,7 @@ export default function ReportPage() {
 
   if (error) {
     return (
-      <div style={{ marginLeft: '240px', minHeight: '100vh', padding: '3rem', backgroundColor: '#F8F9FB' }}>
+      <div style={{ marginLeft: '240px', minHeight: '100vh', padding: '3rem', backgroundColor: theme.pageBg }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', backgroundColor: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '0.75rem', padding: '1rem 1.25rem' }}>
           <AlertCircle size={18} color="#DC2626" />
           <p style={{ color: '#DC2626', fontSize: '0.875rem' }}>{error}</p>
@@ -708,7 +710,7 @@ export default function ReportPage() {
   }
 
   return (
-    <div style={{ marginLeft: '240px', backgroundColor: '#E5E7EB', minHeight: '100vh', paddingBottom: '3rem' }}>
+    <div style={{ marginLeft: '240px', backgroundColor: theme.tagBg, minHeight: '100vh', paddingBottom: '3rem' }}>
       <style>{PRINT_CSS}</style>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 

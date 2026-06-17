@@ -10,6 +10,7 @@ import sprintService from '../services/sprintService';
 import slaService from '../services/slaService';
 import useAuthStore from '../store/authStore';
 import { useAutoT } from '../i18n/LanguageContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 const STRINGS = {
   page_title:      'Reports & Exports',
@@ -113,17 +114,18 @@ function Toast({ notification }) {
 // ── Report card ───────────────────────────────────────────────────────────────
 
 function ReportCard({ icon: Icon, iconBg, iconColor, title, badge, description, included, includesLabel, generatingLabel, btnLabel, btnColor, loading, onClick }) {
+  const { theme } = useTheme();
   return (
     <div style={{
-      backgroundColor: 'white', borderRadius: '0.75rem',
-      border: '1px solid #F0F0F0', overflow: 'hidden',
+      backgroundColor: theme.cardBg, borderRadius: '0.75rem',
+      border: `1px solid ${theme.border}`, overflow: 'hidden',
       boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
       display: 'flex', flexDirection: 'column',
     }}>
       {/* Header */}
       <div style={{
         padding: '1.25rem 1.375rem',
-        borderBottom: '1px solid #F9FAFB',
+        borderBottom: `1px solid ${theme.border}`,
         display: 'flex', alignItems: 'flex-start', gap: '0.875rem',
       }}>
         <div style={{
@@ -135,30 +137,30 @@ function ReportCard({ icon: Icon, iconBg, iconColor, title, badge, description, 
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
-            <h3 style={{ fontSize: '0.9rem', fontWeight: '700', color: '#111827' }}>{title}</h3>
+            <h3 style={{ fontSize: '0.9rem', fontWeight: '700', color: theme.text }}>{title}</h3>
             {badge && (
               <span style={{
                 fontSize: '0.6rem', fontWeight: '700', padding: '0.15rem 0.45rem',
-                borderRadius: '9999px', backgroundColor: '#F3F4F6',
-                color: '#6B7280', border: '1px solid #E5E7EB',
+                borderRadius: '9999px', backgroundColor: theme.tagBg,
+                color: theme.textSub, border: `1px solid ${theme.borderMed}`,
                 textTransform: 'uppercase', letterSpacing: '0.05em',
               }}>{badge}</span>
             )}
           </div>
-          <p style={{ fontSize: '0.75rem', color: '#9CA3AF' }}>{description}</p>
+          <p style={{ fontSize: '0.75rem', color: theme.textMuted }}>{description}</p>
         </div>
       </div>
 
       {/* Body */}
       <div style={{ padding: '1.125rem 1.375rem', flex: 1 }}>
-        <p style={{ fontSize: '0.68rem', fontWeight: '700', color: '#374151', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem' }}>
+        <p style={{ fontSize: '0.68rem', fontWeight: '700', color: theme.textMed, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem' }}>
           {includesLabel || 'Includes'}
         </p>
         <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 1.125rem 0', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
           {included.map(item => (
             <li key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.45rem' }}>
               <span style={{ color: iconColor, fontSize: '0.65rem', marginTop: '0.15rem' }}>✓</span>
-              <span style={{ fontSize: '0.775rem', color: '#6B7280' }}>{item}</span>
+              <span style={{ fontSize: '0.775rem', color: theme.textSub }}>{item}</span>
             </li>
           ))}
         </ul>
@@ -190,6 +192,7 @@ export default function Export() {
   const tx        = useAutoT(STRINGS);
   const navigate  = useNavigate();
   const { user }  = useAuthStore();
+  const { theme } = useTheme();
   const isManager = user?.role === 'IT_MANAGER' || user?.role === 'ADMIN';
 
   const [loading, setLoading]           = useState({});
@@ -296,7 +299,7 @@ export default function Export() {
       <div style={{ marginBottom: '0.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
           <div style={{ width: '3px', height: '16px', backgroundColor: '#CC2027', borderRadius: '9999px' }} />
-          <p style={{ fontSize: '0.72rem', fontWeight: '700', color: '#374151', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{tx.section_docs}</p>
+          <p style={{ fontSize: '0.72rem', fontWeight: '700', color: theme.textMed, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{tx.section_docs}</p>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
           {isManager && (
@@ -357,7 +360,7 @@ export default function Export() {
       {/* Section: Data Exports */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
         <div style={{ width: '3px', height: '16px', backgroundColor: '#2563EB', borderRadius: '9999px' }} />
-        <p style={{ fontSize: '0.72rem', fontWeight: '700', color: '#374151', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{tx.section_csv}</p>
+        <p style={{ fontSize: '0.72rem', fontWeight: '700', color: theme.textMed, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{tx.section_csv}</p>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
@@ -399,9 +402,9 @@ export default function Export() {
       </div>
 
       {/* Footer note */}
-      <div style={{ padding: '0.875rem 1.25rem', backgroundColor: '#F8F9FB', borderRadius: '0.625rem', border: '1px solid #F0F0F0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <CheckCircle size={13} color="#9CA3AF" />
-        <p style={{ fontSize: '0.75rem', color: '#9CA3AF' }}>{tx.footer}</p>
+      <div style={{ padding: '0.875rem 1.25rem', backgroundColor: theme.hoverBg, borderRadius: '0.625rem', border: `1px solid ${theme.border}`, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <CheckCircle size={13} color={theme.textMuted} />
+        <p style={{ fontSize: '0.75rem', color: theme.textMuted }}>{tx.footer}</p>
       </div>
     </PageWrapper>
   );

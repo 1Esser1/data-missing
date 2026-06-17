@@ -7,6 +7,7 @@ import PageWrapper from '../components/layout/PageWrapper';
 import jiraService from '../services/jiraService';
 import taskService from '../services/taskService';
 import { useAutoT, useDynamicTranslation } from '../i18n/LanguageContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 /* ─── constants ─── */
 
@@ -88,22 +89,22 @@ const JIRA_STATUS_COLOR = (s) => {
   return { bg: '#F5F3FF', color: '#7C3AED' };
 };
 
-const inputStyle = {
+const BASE_INPUT_STYLE = {
   width: '100%', padding: '0.65rem 1rem',
-  border: '1.5px solid #E5E7EB', borderRadius: '0.5rem',
-  fontSize: '0.875rem', outline: 'none',
-  boxSizing: 'border-box', backgroundColor: '#FAFAFA',
-  color: '#111827', fontFamily: 'Inter, sans-serif',
+  borderRadius: '0.5rem', fontSize: '0.875rem', outline: 'none',
+  boxSizing: 'border-box', fontFamily: 'Inter, sans-serif',
 };
 
-const labelStyle = {
+const BASE_LABEL_STYLE = {
   display: 'block', fontSize: '0.75rem', fontWeight: '600',
-  color: '#374151', marginBottom: '0.4rem',
-  textTransform: 'uppercase', letterSpacing: '0.05em',
+  marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em',
 };
 
 /* ─── Create Issue Modal ─── */
 function CreateIssueModal({ task, projects, onClose, onCreate, tx }) {
+  const { theme } = useTheme();
+  const inputStyle = { ...BASE_INPUT_STYLE, border: `1.5px solid ${theme.borderMed}`, backgroundColor: theme.inputBg, color: theme.text };
+  const labelStyle = { ...BASE_LABEL_STYLE, color: theme.textMed };
   const [projectKey, setProjectKey] = useState('');
   const [issueType, setIssueType] = useState('Task');
   const [summary, setSummary] = useState(task.title || '');
@@ -138,12 +139,12 @@ function CreateIssueModal({ task, projects, onClose, onCreate, tx }) {
       zIndex: 2000, padding: '1rem',
     }}>
       <div style={{
-        backgroundColor: 'white', borderRadius: '1rem',
+        backgroundColor: theme.cardBg, borderRadius: '1rem',
         width: '100%', maxWidth: '500px',
         boxShadow: '0 20px 60px rgba(0,0,0,0.2)', overflow: 'hidden',
       }}>
         <div style={{
-          padding: '1.25rem 1.5rem', borderBottom: '1px solid #F0F0F0',
+          padding: '1.25rem 1.5rem', borderBottom: `1px solid ${theme.border}`,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
@@ -154,18 +155,18 @@ function CreateIssueModal({ task, projects, onClose, onCreate, tx }) {
             }}>
               <Plus size={15} color="white" />
             </div>
-            <p style={{ fontSize: '0.9rem', fontWeight: '700', color: '#111827' }}>
+            <p style={{ fontSize: '0.9rem', fontWeight: '700', color: theme.text }}>
               {tx.create_title || 'Create Jira issue'}
             </p>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF' }}>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.textMuted }}>
             <X size={18} />
           </button>
         </div>
 
         <div style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
-          <p style={{ fontSize: '0.8rem', color: '#6B7280' }}>
-            {tx.create_for_task || 'Creating issue for task:'} <strong style={{ color: '#111827' }}>{task.title}</strong>
+          <p style={{ fontSize: '0.8rem', color: theme.textSub }}>
+            {tx.create_for_task || 'Creating issue for task:'} <strong style={{ color: theme.text }}>{task.title}</strong>
           </p>
 
           <div>
@@ -176,7 +177,7 @@ function CreateIssueModal({ task, projects, onClose, onCreate, tx }) {
                 onChange={e => setProjectKey(e.target.value)}
                 style={{ ...inputStyle, paddingRight: '2rem', appearance: 'none', cursor: 'pointer' }}
                 onFocus={e => e.target.style.borderColor = '#0052CC'}
-                onBlur={e => e.target.style.borderColor = '#E5E7EB'}
+                onBlur={e => e.target.style.borderColor = theme.borderMed}
               >
                 <option value="">{tx.select_project || 'Select a project…'}</option>
                 {projects.map(p => (
@@ -193,9 +194,9 @@ function CreateIssueModal({ task, projects, onClose, onCreate, tx }) {
               {ISSUE_TYPES.map(t => (
                 <button key={t} onClick={() => setIssueType(t)} style={{
                   padding: '0.35rem 0.875rem', borderRadius: '0.4rem',
-                  border: `1.5px solid ${issueType === t ? '#0052CC' : '#E5E7EB'}`,
-                  backgroundColor: issueType === t ? '#EBF4FF' : 'white',
-                  color: issueType === t ? '#0052CC' : '#6B7280',
+                  border: `1.5px solid ${issueType === t ? '#0052CC' : theme.borderMed}`,
+                  backgroundColor: issueType === t ? '#EBF4FF' : theme.cardBg,
+                  color: issueType === t ? '#0052CC' : theme.textSub,
                   fontSize: '0.8rem', fontWeight: '500', cursor: 'pointer',
                 }}>
                   {t}
@@ -211,19 +212,19 @@ function CreateIssueModal({ task, projects, onClose, onCreate, tx }) {
               onChange={e => setSummary(e.target.value)}
               style={inputStyle}
               onFocus={e => e.target.style.borderColor = '#0052CC'}
-              onBlur={e => e.target.style.borderColor = '#E5E7EB'}
+              onBlur={e => e.target.style.borderColor = theme.borderMed}
             />
           </div>
 
           <div>
-            <label style={labelStyle}>{tx.field_desc || 'Description'} <span style={{ fontWeight: '400', color: '#9CA3AF', textTransform: 'none' }}>({tx.optional || 'optional'})</span></label>
+            <label style={labelStyle}>{tx.field_desc || 'Description'} <span style={{ fontWeight: '400', color: theme.textMuted, textTransform: 'none' }}>({tx.optional || 'optional'})</span></label>
             <textarea
               value={description}
               onChange={e => setDescription(e.target.value)}
               rows={3}
               style={{ ...inputStyle, resize: 'vertical', lineHeight: '1.5' }}
               onFocus={e => e.target.style.borderColor = '#0052CC'}
-              onBlur={e => e.target.style.borderColor = '#E5E7EB'}
+              onBlur={e => e.target.style.borderColor = theme.borderMed}
             />
           </div>
 
@@ -240,13 +241,13 @@ function CreateIssueModal({ task, projects, onClose, onCreate, tx }) {
         </div>
 
         <div style={{
-          padding: '1rem 1.5rem', borderTop: '1px solid #F0F0F0',
+          padding: '1rem 1.5rem', borderTop: `1px solid ${theme.border}`,
           display: 'flex', justifyContent: 'flex-end', gap: '0.5rem',
         }}>
           <button onClick={onClose} style={{
-            padding: '0.5rem 1.1rem', backgroundColor: 'white',
-            border: '1.5px solid #E5E7EB', borderRadius: '0.5rem',
-            fontSize: '0.82rem', fontWeight: '600', color: '#6B7280', cursor: 'pointer',
+            padding: '0.5rem 1.1rem', backgroundColor: theme.cardBg,
+            border: `1.5px solid ${theme.borderMed}`, borderRadius: '0.5rem',
+            fontSize: '0.82rem', fontWeight: '600', color: theme.textSub, cursor: 'pointer',
           }}>
             {tx.btn_cancel || 'Cancel'}
           </button>
@@ -270,6 +271,9 @@ function CreateIssueModal({ task, projects, onClose, onCreate, tx }) {
 
 /* ─── Link Issue Modal ─── */
 function LinkIssueModal({ task, onClose, onLink, tx }) {
+  const { theme } = useTheme();
+  const inputStyle = { ...BASE_INPUT_STYLE, border: `1.5px solid ${theme.borderMed}`, backgroundColor: theme.inputBg, color: theme.text };
+  const labelStyle = { ...BASE_LABEL_STYLE, color: theme.textMed };
   const [issueKey, setIssueKey] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -295,12 +299,12 @@ function LinkIssueModal({ task, onClose, onLink, tx }) {
       zIndex: 2000, padding: '1rem',
     }}>
       <div style={{
-        backgroundColor: 'white', borderRadius: '1rem',
+        backgroundColor: theme.cardBg, borderRadius: '1rem',
         width: '100%', maxWidth: '400px',
         boxShadow: '0 20px 60px rgba(0,0,0,0.2)', overflow: 'hidden',
       }}>
         <div style={{
-          padding: '1.25rem 1.5rem', borderBottom: '1px solid #F0F0F0',
+          padding: '1.25rem 1.5rem', borderBottom: `1px solid ${theme.border}`,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
@@ -311,18 +315,18 @@ function LinkIssueModal({ task, onClose, onLink, tx }) {
             }}>
               <Link2 size={15} color="white" />
             </div>
-            <p style={{ fontSize: '0.9rem', fontWeight: '700', color: '#111827' }}>
+            <p style={{ fontSize: '0.9rem', fontWeight: '700', color: theme.text }}>
               {tx.link_title || 'Link existing issue'}
             </p>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF' }}>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.textMuted }}>
             <X size={18} />
           </button>
         </div>
 
         <div style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
-          <p style={{ fontSize: '0.8rem', color: '#6B7280' }}>
-            {tx.link_for_task || 'Linking to task:'} <strong style={{ color: '#111827' }}>{task.title}</strong>
+          <p style={{ fontSize: '0.8rem', color: theme.textSub }}>
+            {tx.link_for_task || 'Linking to task:'} <strong style={{ color: theme.text }}>{task.title}</strong>
           </p>
           <div>
             <label style={labelStyle}>{tx.field_issue_key || 'Jira issue key'}</label>
@@ -333,7 +337,7 @@ function LinkIssueModal({ task, onClose, onLink, tx }) {
               placeholder={tx.ph_issue_key || 'e.g. PROJ-123'}
               style={{ ...inputStyle, textTransform: 'uppercase' }}
               onFocus={e => e.target.style.borderColor = '#0052CC'}
-              onBlur={e => e.target.style.borderColor = '#E5E7EB'}
+              onBlur={e => e.target.style.borderColor = theme.borderMed}
               autoFocus
             />
           </div>
@@ -350,13 +354,13 @@ function LinkIssueModal({ task, onClose, onLink, tx }) {
         </div>
 
         <div style={{
-          padding: '1rem 1.5rem', borderTop: '1px solid #F0F0F0',
+          padding: '1rem 1.5rem', borderTop: `1px solid ${theme.border}`,
           display: 'flex', justifyContent: 'flex-end', gap: '0.5rem',
         }}>
           <button onClick={onClose} style={{
-            padding: '0.5rem 1.1rem', backgroundColor: 'white',
-            border: '1.5px solid #E5E7EB', borderRadius: '0.5rem',
-            fontSize: '0.82rem', fontWeight: '600', color: '#6B7280', cursor: 'pointer',
+            padding: '0.5rem 1.1rem', backgroundColor: theme.cardBg,
+            border: `1.5px solid ${theme.borderMed}`, borderRadius: '0.5rem',
+            fontSize: '0.82rem', fontWeight: '600', color: theme.textSub, cursor: 'pointer',
           }}>
             {tx.btn_cancel || 'Cancel'}
           </button>
@@ -380,6 +384,8 @@ function LinkIssueModal({ task, onClose, onLink, tx }) {
 
 /* ─── Main Jira Page ─── */
 function JiraPage() {
+  const { theme } = useTheme();
+  const inputStyle = { ...BASE_INPUT_STYLE, border: `1.5px solid ${theme.borderMed}`, backgroundColor: theme.inputBg, color: theme.text };
   const tx = useAutoT(STRINGS);
 
   const [jiraStatus, setJiraStatus] = useState(null);
@@ -516,7 +522,7 @@ function JiraPage() {
       )}
 
       {loading ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '3rem', color: '#9CA3AF' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '3rem', color: theme.textMuted }}>
           <Loader2 size={20} style={{ animation: 'spin 1s linear infinite' }} />
           <span>{tx.loading || 'Loading Jira data…'}</span>
         </div>
@@ -527,8 +533,8 @@ function JiraPage() {
           <div style={{
             padding: '1.25rem 1.5rem',
             borderRadius: '0.75rem',
-            border: `1.5px solid ${jiraStatus?.connected ? '#BAE6FD' : '#F0F0F0'}`,
-            backgroundColor: jiraStatus?.connected ? '#F0F9FF' : '#F8F9FB',
+            border: `1.5px solid ${jiraStatus?.connected ? '#BAE6FD' : theme.border}`,
+            backgroundColor: jiraStatus?.connected ? '#F0F9FF' : theme.hoverBg,
             display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -543,7 +549,7 @@ function JiraPage() {
                 {jiraStatus?.connected ? (
                   <>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
-                      <p style={{ fontSize: '0.95rem', fontWeight: '700', color: '#111827' }}>
+                      <p style={{ fontSize: '0.95rem', fontWeight: '700', color: theme.text }}>
                         {tx.connected_to || 'Connected to'} {jiraStatus.domain}
                       </p>
                       <span style={{
@@ -556,16 +562,16 @@ function JiraPage() {
                         <CheckCircle2 size={10} /> {tx.status_active || 'Active'}
                       </span>
                     </div>
-                    <p style={{ fontSize: '0.8rem', color: '#6B7280' }}>
+                    <p style={{ fontSize: '0.8rem', color: theme.textSub }}>
                       {jiraStatus.jiraEmail} · {linkedCount} {linkedCount !== 1 ? (tx.tasks_linked || 'tasks linked') : (tx.task_linked || 'task linked')}
                     </p>
                   </>
                 ) : (
                   <>
-                    <p style={{ fontSize: '0.95rem', fontWeight: '700', color: '#374151', marginBottom: '0.2rem' }}>
+                    <p style={{ fontSize: '0.95rem', fontWeight: '700', color: theme.textMed, marginBottom: '0.2rem' }}>
                       {tx.not_connected || 'Jira not connected'}
                     </p>
-                    <p style={{ fontSize: '0.8rem', color: '#9CA3AF' }}>
+                    <p style={{ fontSize: '0.8rem', color: theme.textMuted }}>
                       {tx.not_conn_sub || 'Go to Settings → Connected Accounts to link your Jira account.'}
                     </p>
                   </>
@@ -574,8 +580,8 @@ function JiraPage() {
             </div>
             <a href="/settings" style={{
               padding: '0.5rem 1rem', borderRadius: '0.45rem',
-              border: '1px solid #E5E7EB', backgroundColor: 'white',
-              color: '#374151', fontSize: '0.78rem', fontWeight: '500',
+              border: `1px solid ${theme.borderMed}`, backgroundColor: theme.cardBg,
+              color: theme.textMed, fontSize: '0.78rem', fontWeight: '500',
               textDecoration: 'none', flexShrink: 0,
               display: 'flex', alignItems: 'center', gap: '0.3rem',
             }}>
@@ -587,8 +593,8 @@ function JiraPage() {
           {!jiraStatus?.connected && (
             <div style={{
               padding: '3rem 2rem', textAlign: 'center',
-              backgroundColor: 'white', borderRadius: '0.75rem',
-              border: '1px solid #F0F0F0',
+              backgroundColor: theme.cardBg, borderRadius: '0.75rem',
+              border: `1px solid ${theme.border}`,
             }}>
               <div style={{
                 width: '56px', height: '56px', borderRadius: '1rem',
@@ -598,10 +604,10 @@ function JiraPage() {
               }}>
                 <Link2 size={24} color="#2563EB" />
               </div>
-              <p style={{ fontSize: '1rem', fontWeight: '700', color: '#111827', marginBottom: '0.5rem' }}>
+              <p style={{ fontSize: '1rem', fontWeight: '700', color: theme.text, marginBottom: '0.5rem' }}>
                 {tx.connect_title || 'Connect your Jira account'}
               </p>
-              <p style={{ fontSize: '0.85rem', color: '#6B7280', maxWidth: '360px', margin: '0 auto 1.5rem', lineHeight: '1.6' }}>
+              <p style={{ fontSize: '0.85rem', color: theme.textSub, maxWidth: '360px', margin: '0 auto 1.5rem', lineHeight: '1.6' }}>
                 {tx.connect_desc || 'Link your Atlassian account to create and track Jira issues directly from PriorIT tasks.'}
               </p>
               <a href="/settings" style={{
@@ -618,13 +624,13 @@ function JiraPage() {
           {/* Task table — shown only when connected */}
           {jiraStatus?.connected && (
             <div style={{
-              backgroundColor: 'white', borderRadius: '0.75rem',
-              border: '1px solid #F0F0F0', overflow: 'hidden',
+              backgroundColor: theme.cardBg, borderRadius: '0.75rem',
+              border: `1px solid ${theme.border}`, overflow: 'hidden',
             }}>
               {/* Toolbar */}
               <div style={{
                 padding: '1rem 1.25rem',
-                borderBottom: '1px solid #F0F0F0',
+                borderBottom: `1px solid ${theme.border}`,
                 display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap',
               }}>
                 {/* Search */}
@@ -647,9 +653,9 @@ function JiraPage() {
                   ].map(f => (
                     <button key={f.key} onClick={() => setFilter(f.key)} style={{
                       padding: '0.4rem 0.875rem', borderRadius: '9999px',
-                      border: `1.5px solid ${filter === f.key ? '#0052CC' : '#E5E7EB'}`,
-                      backgroundColor: filter === f.key ? '#EBF4FF' : 'white',
-                      color: filter === f.key ? '#0052CC' : '#6B7280',
+                      border: `1.5px solid ${filter === f.key ? '#0052CC' : theme.borderMed}`,
+                      backgroundColor: filter === f.key ? '#EBF4FF' : theme.cardBg,
+                      color: filter === f.key ? '#0052CC' : theme.textSub,
                       fontSize: '0.78rem', fontWeight: '500', cursor: 'pointer',
                     }}>
                       {f.label}
@@ -663,12 +669,12 @@ function JiraPage() {
                 display: 'grid',
                 gridTemplateColumns: '2.5fr 100px 160px 120px 180px',
                 padding: '0.65rem 1.25rem',
-                backgroundColor: '#F8F9FB',
-                borderBottom: '1px solid #F0F0F0',
+                backgroundColor: theme.hoverBg,
+                borderBottom: `1px solid ${theme.border}`,
               }}>
                 {[tx.col_task || 'Task', tx.col_priority || 'Priority', tx.col_jira || 'Jira Issue', tx.col_status || 'Status', tx.col_actions || 'Actions'].map(h => (
                   <span key={h} style={{
-                    fontSize: '0.68rem', fontWeight: '600', color: '#9CA3AF',
+                    fontSize: '0.68rem', fontWeight: '600', color: theme.textMuted,
                     textTransform: 'uppercase', letterSpacing: '0.05em',
                   }}>{h}</span>
                 ))}
@@ -676,7 +682,7 @@ function JiraPage() {
 
               {/* Rows */}
               {filtered.length === 0 ? (
-                <div style={{ padding: '3rem', textAlign: 'center', color: '#9CA3AF', fontSize: '0.875rem' }}>
+                <div style={{ padding: '3rem', textAlign: 'center', color: theme.textMuted, fontSize: '0.875rem' }}>
                   {tx.no_tasks || 'No tasks match the current filter.'}
                 </div>
               ) : (
@@ -693,22 +699,22 @@ function JiraPage() {
                       display: 'grid',
                       gridTemplateColumns: '2.5fr 100px 160px 120px 180px',
                       padding: '0.875rem 1.25rem',
-                      borderBottom: i < filtered.length - 1 ? '1px solid #F9FAFB' : 'none',
+                      borderBottom: i < filtered.length - 1 ? `1px solid ${theme.border}` : 'none',
                       alignItems: 'center',
                     }}
-                      onMouseEnter={e => e.currentTarget.style.backgroundColor = '#FAFAFA'}
+                      onMouseEnter={e => e.currentTarget.style.backgroundColor = theme.hoverBg}
                       onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
                     >
                       {/* Task title */}
                       <div style={{ minWidth: 0, paddingRight: '1rem' }}>
                         <p style={{
-                          fontSize: '0.85rem', fontWeight: '500', color: '#111827',
+                          fontSize: '0.85rem', fontWeight: '500', color: theme.text,
                           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                         }}>
                           {txData?.[task.title] || task.title}
                         </p>
                         {task.type && (
-                          <p style={{ fontSize: '0.72rem', color: '#9CA3AF', marginTop: '0.15rem' }}>{txData?.[task.type] || task.type}</p>
+                          <p style={{ fontSize: '0.72rem', color: theme.textMuted, marginTop: '0.15rem' }}>{txData?.[task.type] || task.type}</p>
                         )}
                       </div>
 
@@ -736,7 +742,7 @@ function JiraPage() {
                             <ExternalLink size={11} />
                           </a>
                         ) : (
-                          <span style={{ fontSize: '0.78rem', color: '#D1D5DB' }}>—</span>
+                          <span style={{ fontSize: '0.78rem', color: theme.borderMed }}>—</span>
                         )}
                       </div>
 
@@ -751,7 +757,7 @@ function JiraPage() {
                             {task.jiraIssueStatus}
                           </span>
                         ) : (
-                          <span style={{ fontSize: '0.78rem', color: '#D1D5DB' }}>—</span>
+                          <span style={{ fontSize: '0.78rem', color: theme.borderMed }}>—</span>
                         )}
                       </div>
 
@@ -766,8 +772,8 @@ function JiraPage() {
                               style={{
                                 display: 'flex', alignItems: 'center', gap: '0.25rem',
                                 padding: '0.3rem 0.625rem', borderRadius: '0.375rem',
-                                border: '1px solid #E5E7EB', backgroundColor: 'white',
-                                color: '#374151', fontSize: '0.72rem', fontWeight: '500',
+                                border: `1px solid ${theme.borderMed}`, backgroundColor: theme.cardBg,
+                                color: theme.textMed, fontSize: '0.72rem', fontWeight: '500',
                                 cursor: isRefreshing ? 'not-allowed' : 'pointer',
                                 opacity: isRefreshing ? 0.6 : 1,
                               }}
@@ -814,8 +820,8 @@ function JiraPage() {
                               style={{
                                 display: 'flex', alignItems: 'center', gap: '0.25rem',
                                 padding: '0.3rem 0.625rem', borderRadius: '0.375rem',
-                                border: '1px solid #E5E7EB', backgroundColor: 'white',
-                                color: '#374151', fontSize: '0.72rem', fontWeight: '500',
+                                border: `1px solid ${theme.borderMed}`, backgroundColor: theme.cardBg,
+                                color: theme.textMed, fontSize: '0.72rem', fontWeight: '500',
                                 cursor: 'pointer',
                               }}
                             >
@@ -834,10 +840,10 @@ function JiraPage() {
               {filtered.length > 0 && (
                 <div style={{
                   padding: '0.75rem 1.25rem',
-                  borderTop: '1px solid #F0F0F0',
-                  backgroundColor: '#F8F9FB',
+                  borderTop: `1px solid ${theme.border}`,
+                  backgroundColor: theme.hoverBg,
                 }}>
-                  <p style={{ fontSize: '0.75rem', color: '#9CA3AF' }}>
+                  <p style={{ fontSize: '0.75rem', color: theme.textMuted }}>
                     {tx.showing || 'Showing'} {filtered.length} {tx.of || 'of'} {tasks.length} task{tasks.length !== 1 ? 's' : ''}
                     {linkedCount > 0 && ` · ${linkedCount} ${tx.linked_to_jira || 'linked to Jira'}`}
                   </p>

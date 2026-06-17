@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Brain, ChevronDown, ChevronUp, RefreshCw, AlertCircle } from 'lucide-react';
+import EmptyState from '../components/ui/EmptyState';
 import PageWrapper from '../components/layout/PageWrapper';
 import taskService from '../services/taskService';
 import { useLanguage, useTranslatedTask, useDynamicTranslation } from '../i18n/LanguageContext';
 import useAuthStore from '../store/authStore';
+import { useTheme } from '../contexts/ThemeContext';
 
 const KANO_STYLES = {
   BASIC: { bg: '#FEF2F2', color: '#DC2626', border: '#FECACA', label: 'Basic Need' },
@@ -80,6 +82,7 @@ const extractScoringStrings = (items) => [
 // Each card uses useTranslatedTask — auto-translates all AI text when expanded
 function ScoredTaskCard({ task, index, isExpanded, onToggle, txData }) {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const tx = useTranslatedTask(task, isExpanded);
 
   const kano = KANO_STYLES[task.kanoCategory] || KANO_STYLES.INDIFFERENT;
@@ -90,9 +93,9 @@ function ScoredTaskCard({ task, index, isExpanded, onToggle, txData }) {
 
   return (
     <div style={{
-      backgroundColor: 'white',
+      backgroundColor: theme.cardBg,
       borderRadius: '0.75rem',
-      border: '1px solid #F0F0F0',
+      border: `1px solid ${theme.border}`,
       boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
       overflow: 'hidden',
     }}>
@@ -128,14 +131,14 @@ function ScoredTaskCard({ task, index, isExpanded, onToggle, txData }) {
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{
                 fontSize: '0.925rem', fontWeight: '700',
-                color: '#111827', marginBottom: '0.4rem',
+                color: theme.text, marginBottom: '0.4rem',
               }}>
                 {txData?.[task.title] || task.title}
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.5rem' }}>
                 <span style={{
-                  fontSize: '0.72rem', color: '#9CA3AF',
-                  backgroundColor: '#F3F4F6', padding: '0.1rem 0.5rem',
+                  fontSize: '0.72rem', color: theme.textMuted,
+                  backgroundColor: theme.tagBg, padding: '0.1rem 0.5rem',
                   borderRadius: '4px',
                 }}>
                   {txData?.[task.taskType] || task.taskType}
@@ -208,25 +211,25 @@ function ScoredTaskCard({ task, index, isExpanded, onToggle, txData }) {
 
       {/* Expanded detail — uses tx (translated task) for all AI-generated text */}
       {isExpanded && (
-        <div style={{ borderTop: '1px solid #F9FAFB', backgroundColor: '#FAFAFA' }}>
+        <div style={{ borderTop: `1px solid ${theme.border}`, backgroundColor: theme.hoverBg }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 0 }}>
 
             {/* Column 1 — Description + Industry context */}
-            <div style={{ padding: '1.5rem', borderRight: '1px solid #F0F0F0' }}>
+            <div style={{ padding: '1.5rem', borderRight: `1px solid ${theme.border}` }}>
               <p style={{
-                fontSize: '0.72rem', fontWeight: '600', color: '#374151',
+                fontSize: '0.72rem', fontWeight: '600', color: theme.textMed,
                 textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem',
               }}>
                 {t('task_description')}
               </p>
-              <p style={{ fontSize: '0.825rem', color: '#6B7280', lineHeight: '1.6', marginBottom: '1.25rem' }}>
+              <p style={{ fontSize: '0.825rem', color: theme.textSub, lineHeight: '1.6', marginBottom: '1.25rem' }}>
                 {tx.description}
               </p>
 
               {task.industryContext && (
                 <>
                   <p style={{
-                    fontSize: '0.72rem', fontWeight: '600', color: '#374151',
+                    fontSize: '0.72rem', fontWeight: '600', color: theme.textMed,
                     textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem',
                   }}>
                     🌍 {t('industry_context')}
@@ -244,9 +247,9 @@ function ScoredTaskCard({ task, index, isExpanded, onToggle, txData }) {
             </div>
 
             {/* Column 2 — RICE breakdown */}
-            <div style={{ padding: '1.5rem', borderRight: '1px solid #F0F0F0' }}>
+            <div style={{ padding: '1.5rem', borderRight: `1px solid ${theme.border}` }}>
               <p style={{
-                fontSize: '0.72rem', fontWeight: '600', color: '#374151',
+                fontSize: '0.72rem', fontWeight: '600', color: theme.textMed,
                 textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.875rem',
               }}>
                 {t('rice_variables')}
@@ -264,20 +267,20 @@ function ScoredTaskCard({ task, index, isExpanded, onToggle, txData }) {
 
               <div style={{
                 marginTop: '1rem', padding: '0.875rem',
-                backgroundColor: 'white', borderRadius: '0.5rem',
-                border: '1px solid #F0F0F0',
+                backgroundColor: theme.cardBg, borderRadius: '0.5rem',
+                border: `1px solid ${theme.border}`,
               }}>
-                <p style={{ fontSize: '0.68rem', color: '#9CA3AF', marginBottom: '0.5rem', textAlign: 'center' }}>
+                <p style={{ fontSize: '0.68rem', color: theme.textMuted, marginBottom: '0.5rem', textAlign: 'center' }}>
                   {t('rice_formula')}
                 </p>
                 <div style={{
                   display: 'flex', justifyContent: 'center',
                   alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem',
                 }}>
-                  <span style={{ color: '#374151', fontWeight: '600' }}>{task.riceScore?.toFixed(2)}</span>
-                  <span style={{ color: '#9CA3AF' }}>×</span>
-                  <span style={{ color: '#374151', fontWeight: '600' }}>{multiplier.toFixed(2)}</span>
-                  <span style={{ color: '#9CA3AF' }}>=</span>
+                  <span style={{ color: theme.textMed, fontWeight: '600' }}>{task.riceScore?.toFixed(2)}</span>
+                  <span style={{ color: theme.textMuted }}>×</span>
+                  <span style={{ color: theme.textMed, fontWeight: '600' }}>{multiplier.toFixed(2)}</span>
+                  <span style={{ color: theme.textMuted }}>=</span>
                   <span style={{ fontSize: '1.1rem', fontWeight: '800', color: '#CC2027' }}>
                     {task.finalScore?.toFixed(1)}
                   </span>
@@ -288,7 +291,7 @@ function ScoredTaskCard({ task, index, isExpanded, onToggle, txData }) {
             {/* Column 3 — AI reasoning (auto-translated via tx) */}
             <div style={{ padding: '1.5rem' }}>
               <p style={{
-                fontSize: '0.72rem', fontWeight: '600', color: '#374151',
+                fontSize: '0.72rem', fontWeight: '600', color: theme.textMed,
                 textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.875rem',
               }}>
                 {t('ai_reasoning')}
@@ -313,7 +316,7 @@ function ScoredTaskCard({ task, index, isExpanded, onToggle, txData }) {
                     ×{KANO_MULTIPLIERS[task.kanoCategory] || 1.0}
                   </span>
                 </div>
-                <p style={{ fontSize: '0.78rem', color: '#374151', lineHeight: '1.5' }}>
+                <p style={{ fontSize: '0.78rem', color: theme.textMed, lineHeight: '1.5' }}>
                   {tx.kanoReasoning || '—'}
                 </p>
               </div>
@@ -337,7 +340,7 @@ function ScoredTaskCard({ task, index, isExpanded, onToggle, txData }) {
                     ×{MOSCOW_MULTIPLIERS[task.moscowLabel] || 1.0}
                   </span>
                 </div>
-                <p style={{ fontSize: '0.78rem', color: '#374151', lineHeight: '1.5' }}>
+                <p style={{ fontSize: '0.78rem', color: theme.textMed, lineHeight: '1.5' }}>
                   {tx.moscowReasoning || '—'}
                 </p>
               </div>
@@ -373,6 +376,7 @@ function Scoring() {
   const [filterKano, setFilterKano] = useState('ALL');
   const [filterMoscow, setFilterMoscow] = useState('ALL');
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const txData = useDynamicTranslation(tasks, extractScoringStrings, 'scoring');
   const { user } = useAuthStore();
   const isPrivileged = user?.role === 'ADMIN' || user?.role === 'IT_MANAGER';
@@ -432,13 +436,13 @@ function Scoring() {
             },
           ].map(stat => (
             <div key={stat.label} style={{
-              backgroundColor: 'white', borderRadius: '0.75rem',
-              padding: '1.1rem 1.25rem', border: '1px solid #F0F0F0',
+              backgroundColor: theme.cardBg, borderRadius: '0.75rem',
+              padding: '1.1rem 1.25rem', border: `1px solid ${theme.border}`,
               boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
               borderLeft: `4px solid ${stat.color}`,
             }}>
-              <p style={{ fontSize: '1.5rem', fontWeight: '700', color: '#111827' }}>{stat.value}</p>
-              <p style={{ fontSize: '0.75rem', color: '#9CA3AF', marginTop: '0.15rem' }}>{stat.label}</p>
+              <p style={{ fontSize: '1.5rem', fontWeight: '700', color: theme.text }}>{stat.value}</p>
+              <p style={{ fontSize: '0.75rem', color: theme.textMuted, marginTop: '0.15rem' }}>{stat.label}</p>
             </div>
           ))}
         </div>
@@ -455,9 +459,9 @@ function Scoring() {
               <button key={f} onClick={() => setFilterKano(f)}
                 style={{
                   padding: '0.3rem 0.7rem', borderRadius: '9999px', border: '1.5px solid',
-                  borderColor: filterKano === f ? '#CC2027' : '#E5E7EB',
-                  backgroundColor: filterKano === f ? '#FEF2F2' : 'white',
-                  color: filterKano === f ? '#CC2027' : '#6B7280',
+                  borderColor: filterKano === f ? '#CC2027' : theme.borderMed,
+                  backgroundColor: filterKano === f ? '#FEF2F2' : theme.cardBg,
+                  color: filterKano === f ? '#CC2027' : theme.textSub,
                   fontSize: '0.72rem', fontWeight: '600', cursor: 'pointer',
                 }}>
                 {f === 'ALL' ? t('filter_all_kano') : f}
@@ -469,9 +473,9 @@ function Scoring() {
               <button key={f} onClick={() => setFilterMoscow(f)}
                 style={{
                   padding: '0.3rem 0.7rem', borderRadius: '9999px', border: '1.5px solid',
-                  borderColor: filterMoscow === f ? '#1A1A2E' : '#E5E7EB',
-                  backgroundColor: filterMoscow === f ? '#1A1A2E' : 'white',
-                  color: filterMoscow === f ? 'white' : '#6B7280',
+                  borderColor: filterMoscow === f ? '#1A1A2E' : theme.borderMed,
+                  backgroundColor: filterMoscow === f ? '#1A1A2E' : theme.cardBg,
+                  color: filterMoscow === f ? 'white' : theme.textSub,
                   fontSize: '0.72rem', fontWeight: '600', cursor: 'pointer',
                 }}>
                 {f === 'ALL' ? t('filter_all_moscow') : f}
@@ -481,9 +485,9 @@ function Scoring() {
         </div>
         <button onClick={loadTasks} style={{
           display: 'flex', alignItems: 'center', gap: '0.4rem',
-          padding: '0.4rem 0.85rem', backgroundColor: 'white',
-          border: '1.5px solid #E5E7EB', borderRadius: '0.5rem',
-          fontSize: '0.78rem', color: '#6B7280', cursor: 'pointer',
+          padding: '0.4rem 0.85rem', backgroundColor: theme.cardBg,
+          border: `1.5px solid ${theme.borderMed}`, borderRadius: '0.5rem',
+          fontSize: '0.78rem', color: theme.textSub, cursor: 'pointer',
         }}>
           <RefreshCw size={13} />
           {t('refresh')}
@@ -512,18 +516,12 @@ function Scoring() {
 
       {/* Empty */}
       {!isLoading && filtered.length === 0 && (
-        <div style={{
-          textAlign: 'center', padding: '4rem',
-          backgroundColor: 'white', borderRadius: '0.75rem',
-          border: '1px solid #F0F0F0',
-        }}>
-          <Brain size={32} color="#E5E7EB" style={{ marginBottom: '0.75rem' }} />
-          <p style={{ fontWeight: '600', color: '#374151', marginBottom: '0.25rem' }}>
-            {t('scoring_empty_title')}
-          </p>
-          <p style={{ color: '#9CA3AF', fontSize: '0.875rem' }}>
-            {t('scoring_empty_subtitle')}
-          </p>
+        <div style={{ backgroundColor: theme.cardBg, borderRadius: '0.75rem', border: `1px solid ${theme.border}` }}>
+          <EmptyState
+            variant="scoring"
+            title={t('scoring_empty_title')}
+            subtitle={t('scoring_empty_subtitle')}
+          />
         </div>
       )}
 

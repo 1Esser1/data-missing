@@ -3,6 +3,7 @@ import { RefreshCw, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
 import sprintService from '../services/sprintService';
 import { useAutoT, useLanguage } from '../i18n/LanguageContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { translateBatch } from '../i18n/translateService';
 
 const STRINGS = {
@@ -63,6 +64,7 @@ function Avatar({ name, photoPath, size = 44 }) {
 }
 
 function MemberCard({ member, tx, txTitles }) {
+  const { theme } = useTheme();
   const [expanded, setExpanded] = useState(false);
   const load = getLoad(member.totalEstimatedHours, tx);
   const barPct = Math.min((member.totalEstimatedHours / CAPACITY) * 100, 100);
@@ -71,15 +73,15 @@ function MemberCard({ member, tx, txTitles }) {
   const ROLE_LABELS = { DEVELOPER: tx.developer, PRODUCT_TEAM: tx.product };
 
   return (
-    <div style={{ backgroundColor: 'white', border: `1px solid ${load.border}`, borderRadius: '0.875rem', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
-      <div style={{ padding: '1rem 1.125rem', borderBottom: '1px solid #F3F4F6', display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
+    <div style={{ backgroundColor: theme.cardBg, border: `1px solid ${load.border}`, borderRadius: '0.875rem', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
+      <div style={{ padding: '1rem 1.125rem', borderBottom: `1px solid ${theme.border}`, display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
         <Avatar name={member.name} photoPath={member.photoPath} size={44} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
-            <p style={{ fontWeight: '700', fontSize: '0.9rem', color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{member.name}</p>
+            <p style={{ fontWeight: '700', fontSize: '0.9rem', color: theme.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{member.name}</p>
             <span style={{ fontSize: '0.65rem', fontWeight: '800', padding: '0.2rem 0.55rem', borderRadius: '9999px', backgroundColor: load.bg, color: load.color, border: `1px solid ${load.border}`, textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>{load.label}</span>
           </div>
-          <p style={{ fontSize: '0.72rem', color: '#9CA3AF', marginTop: '0.1rem' }}>{ROLE_LABELS[member.role] ?? member.role}</p>
+          <p style={{ fontSize: '0.72rem', color: theme.textMuted, marginTop: '0.1rem' }}>{ROLE_LABELS[member.role] ?? member.role}</p>
         </div>
       </div>
 
@@ -88,18 +90,18 @@ function MemberCard({ member, tx, txTitles }) {
           <div style={{ textAlign: 'center', padding: '1.25rem 0', color: '#16A34A' }}>
             <div style={{ fontSize: '1.6rem', marginBottom: '0.35rem' }}>✓</div>
             <p style={{ fontWeight: '600', fontSize: '0.85rem' }}>{tx.no_subtasks}</p>
-            <p style={{ fontSize: '0.75rem', color: '#6B7280', marginTop: '0.2rem' }}>{tx.ready}</p>
+            <p style={{ fontSize: '0.75rem', color: theme.textSub, marginTop: '0.2rem' }}>{tx.ready}</p>
           </div>
         ) : (
           <>
             <div style={{ marginBottom: '1rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
-                <span style={{ fontSize: '0.72rem', color: '#6B7280', fontWeight: '500' }}>{tx.est_hours}</span>
+                <span style={{ fontSize: '0.72rem', color: theme.textSub, fontWeight: '500' }}>{tx.est_hours}</span>
                 <span style={{ fontSize: '0.78rem', fontWeight: '800', color: load.color }}>
-                  {member.totalEstimatedHours}h<span style={{ fontWeight: '400', color: '#9CA3AF', fontSize: '0.68rem' }}> / ~{CAPACITY}h</span>
+                  {member.totalEstimatedHours}h<span style={{ fontWeight: '400', color: theme.textMuted, fontSize: '0.68rem' }}> / ~{CAPACITY}h</span>
                 </span>
               </div>
-              <div style={{ height: '8px', backgroundColor: '#F3F4F6', borderRadius: '9999px', overflow: 'hidden' }}>
+              <div style={{ height: '8px', backgroundColor: theme.tagBg, borderRadius: '9999px', overflow: 'hidden' }}>
                 <div style={{ height: '100%', width: `${barPct}%`, backgroundColor: load.color, borderRadius: '9999px', transition: 'width 0.5s ease' }} />
               </div>
             </div>
@@ -136,26 +138,26 @@ function MemberCard({ member, tx, txTitles }) {
       {totalActive > 0 && (
         <>
           <button onClick={() => setExpanded(v => !v)}
-            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.6rem 1.125rem', borderTop: '1px solid #F3F4F6', border: 'none', backgroundColor: expanded ? '#F9FAFB' : 'white', cursor: 'pointer', fontSize: '0.75rem', fontWeight: '600', color: '#6B7280', transition: 'background-color 0.15s' }}
-            onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#F3F4F6'; }}
-            onMouseLeave={e => { e.currentTarget.style.backgroundColor = expanded ? '#F9FAFB' : 'white'; }}>
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.6rem 1.125rem', borderTop: `1px solid ${theme.border}`, border: 'none', backgroundColor: expanded ? theme.hoverBg : theme.cardBg, cursor: 'pointer', fontSize: '0.75rem', fontWeight: '600', color: theme.textSub, transition: 'background-color 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.backgroundColor = theme.tagBg; }}
+            onMouseLeave={e => { e.currentTarget.style.backgroundColor = expanded ? theme.hoverBg : theme.cardBg; }}>
             <span>{totalActive} {totalActive !== 1 ? tx.active_sub_pl : tx.active_sub_s}</span>
             {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </button>
 
           {expanded && (
-            <div style={{ borderTop: '1px solid #F3F4F6', maxHeight: '220px', overflowY: 'auto' }}>
+            <div style={{ borderTop: `1px solid ${theme.border}`, maxHeight: '220px', overflowY: 'auto' }}>
               {member.activeSubtasks.map(s => {
                 const cx = getComplexityStyle(s.complexity, tx);
                 return (
-                  <div key={s.id} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '0.55rem 1.125rem', borderBottom: '1px solid #F9FAFB', gap: '0.5rem' }}>
+                  <div key={s.id} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '0.55rem 1.125rem', borderBottom: `1px solid ${theme.border}`, gap: '0.5rem' }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: '0.775rem', color: '#374151', fontWeight: '500', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{txTitles[s.title] || s.title}</p>
-                      <p style={{ fontSize: '0.65rem', color: '#9CA3AF', marginTop: '0.1rem' }}>{txTitles[s.taskTitle] || s.taskTitle}</p>
+                      <p style={{ fontSize: '0.775rem', color: theme.textMed, fontWeight: '500', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{txTitles[s.title] || s.title}</p>
+                      <p style={{ fontSize: '0.65rem', color: theme.textMuted, marginTop: '0.1rem' }}>{txTitles[s.taskTitle] || s.taskTitle}</p>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexShrink: 0 }}>
                       {cx && <span style={{ fontSize: '0.6rem', fontWeight: '700', padding: '0.1rem 0.35rem', borderRadius: '9999px', border: `1px solid ${cx.border}`, backgroundColor: cx.bg, color: cx.color, textTransform: 'uppercase' }}>{cx.label}</span>}
-                      {s.estimatedHours != null && <span style={{ fontSize: '0.65rem', color: '#9CA3AF', fontWeight: '500' }}>{s.estimatedHours}h</span>}
+                      {s.estimatedHours != null && <span style={{ fontSize: '0.65rem', color: theme.textMuted, fontWeight: '500' }}>{s.estimatedHours}h</span>}
                     </div>
                   </div>
                 );
@@ -171,6 +173,7 @@ function MemberCard({ member, tx, txTitles }) {
 export default function WorkloadPage() {
   const tx = useAutoT(STRINGS);
   const { language } = useLanguage();
+  const { theme } = useTheme();
   const [members, setMembers]         = useState([]);
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState('');
@@ -238,20 +241,20 @@ export default function WorkloadPage() {
         )}
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <div style={{ display: 'flex', gap: '0.2rem', backgroundColor: '#F3F4F6', borderRadius: '0.5rem', padding: '0.2rem' }}>
+          <div style={{ display: 'flex', gap: '0.2rem', backgroundColor: theme.tagBg, borderRadius: '0.5rem', padding: '0.2rem' }}>
             {[
               { key: 'ALL',          label: tx.all },
               { key: 'DEVELOPER',    label: tx.developer },
               { key: 'PRODUCT_TEAM', label: tx.product },
             ].map(opt => (
               <button key={opt.key} onClick={() => setRoleFilter(opt.key)}
-                style={{ padding: '0.3rem 0.75rem', borderRadius: '0.35rem', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: '600', backgroundColor: roleFilter === opt.key ? 'white' : 'transparent', color: roleFilter === opt.key ? '#111827' : '#6B7280', boxShadow: roleFilter === opt.key ? '0 1px 3px rgba(0,0,0,0.08)' : 'none', transition: 'all 0.15s' }}>
+                style={{ padding: '0.3rem 0.75rem', borderRadius: '0.35rem', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: '600', backgroundColor: roleFilter === opt.key ? theme.cardBg : 'transparent', color: roleFilter === opt.key ? theme.text : theme.textSub, boxShadow: roleFilter === opt.key ? '0 1px 3px rgba(0,0,0,0.08)' : 'none', transition: 'all 0.15s' }}>
                 {opt.label}
               </button>
             ))}
           </div>
           <button onClick={handleRefresh} disabled={refreshing}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 0.875rem', borderRadius: '0.5rem', border: '1.5px solid #E5E7EB', backgroundColor: 'white', color: '#6B7280', fontSize: '0.8rem', fontWeight: '500', cursor: refreshing ? 'not-allowed' : 'pointer', opacity: refreshing ? 0.6 : 1 }}>
+            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 0.875rem', borderRadius: '0.5rem', border: `1.5px solid ${theme.borderMed}`, backgroundColor: theme.cardBg, color: theme.textSub, fontSize: '0.8rem', fontWeight: '500', cursor: refreshing ? 'not-allowed' : 'pointer', opacity: refreshing ? 0.6 : 1 }}>
             <RefreshCw size={13} style={refreshing ? { animation: 'spin 1s linear infinite' } : {}} />
             {tx.refresh}
           </button>
@@ -272,9 +275,9 @@ export default function WorkloadPage() {
       )}
 
       {!loading && !error && visible.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '4rem 2rem', backgroundColor: 'white', borderRadius: '0.875rem', border: '1px solid #F0F0F0' }}>
-          <p style={{ fontWeight: '700', color: '#374151', marginBottom: '0.35rem' }}>{tx.no_members}</p>
-          <p style={{ color: '#9CA3AF', fontSize: '0.875rem' }}>{tx.no_members_sub}</p>
+        <div style={{ textAlign: 'center', padding: '4rem 2rem', backgroundColor: theme.cardBg, borderRadius: '0.875rem', border: `1px solid ${theme.border}` }}>
+          <p style={{ fontWeight: '700', color: theme.textMed, marginBottom: '0.35rem' }}>{tx.no_members}</p>
+          <p style={{ color: theme.textMuted, fontSize: '0.875rem' }}>{tx.no_members_sub}</p>
         </div>
       )}
 

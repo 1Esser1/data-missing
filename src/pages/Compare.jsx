@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Plus, Trash2, AlertCircle, RotateCcw, Sparkles, ListTodo, Check, Loader2 } from 'lucide-react';
+import EmptyState from '../components/ui/EmptyState';
 import PageWrapper from '../components/layout/PageWrapper';
 import compareService from '../services/compareService';
 import taskService from '../services/taskService';
 import { useLanguage, useTranslatedCompareResults } from '../i18n/LanguageContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -48,27 +50,10 @@ const MAX_ITEMS = 6;
 
 // ── Shared styles ──────────────────────────────────────────────────────────────
 
-const inputStyle = {
-  width: '100%',
-  padding: '0.75rem 1rem',
-  border: '1.5px solid #E5E7EB',
-  borderRadius: '0.5rem',
-  fontSize: '0.875rem',
-  outline: 'none',
-  boxSizing: 'border-box',
-  backgroundColor: '#FAFAFA',
-  color: '#111827',
-  fontFamily: 'Inter, sans-serif',
-};
-
-const labelStyle = {
-  display: 'block',
-  fontSize: '0.78rem',
-  fontWeight: '600',
-  color: '#374151',
-  marginBottom: '0.5rem',
-  textTransform: 'uppercase',
-  letterSpacing: '0.05em',
+const BASE_INPUT_STYLE = {
+  width: '100%', padding: '0.75rem 1rem',
+  borderRadius: '0.5rem', fontSize: '0.875rem', outline: 'none',
+  boxSizing: 'border-box', fontFamily: 'Inter, sans-serif',
 };
 
 const emptyItem = () => ({ title: '', description: '', category: '' });
@@ -94,6 +79,7 @@ function Badge({ label, colors }) {
 
 function ModeSelector({ mode, onChange }) {
   const { t } = useLanguage();
+  const { theme } = useTheme();
 
   const modes = [
     { id: 'features', icon: Sparkles, labelKey: 'compare_mode_features', descKey: 'compare_mode_features_desc' },
@@ -114,22 +100,22 @@ function ModeSelector({ mode, onChange }) {
             style={{
               textAlign: 'left', padding: '1rem 1.25rem',
               borderRadius: '0.75rem', cursor: 'pointer',
-              border: `2px solid ${active ? '#CC2027' : '#E5E7EB'}`,
-              backgroundColor: active ? '#FEF2F2' : 'white',
+              border: `2px solid ${active ? '#CC2027' : theme.borderMed}`,
+              backgroundColor: active ? '#FEF2F2' : theme.cardBg,
               transition: 'all 0.15s',
             }}
             onMouseEnter={e => { if (!active) e.currentTarget.style.borderColor = '#FECACA'; }}
-            onMouseLeave={e => { if (!active) e.currentTarget.style.borderColor = '#E5E7EB'; }}
+            onMouseLeave={e => { if (!active) e.currentTarget.style.borderColor = theme.borderMed; }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.4rem' }}>
               <div style={{
                 width: '28px', height: '28px', borderRadius: '0.4rem',
-                backgroundColor: active ? '#CC2027' : '#F3F4F6',
+                backgroundColor: active ? '#CC2027' : theme.tagBg,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <Icon size={14} color={active ? 'white' : '#6B7280'} />
+                <Icon size={14} color={active ? 'white' : theme.textSub} />
               </div>
-              <span style={{ fontSize: '0.875rem', fontWeight: '700', color: active ? '#CC2027' : '#111827' }}>
+              <span style={{ fontSize: '0.875rem', fontWeight: '700', color: active ? '#CC2027' : theme.text }}>
                 {t(labelKey)}
               </span>
               {active && (
@@ -141,7 +127,7 @@ function ModeSelector({ mode, onChange }) {
                 </div>
               )}
             </div>
-            <p style={{ fontSize: '0.75rem', color: '#6B7280', lineHeight: 1.5, margin: 0 }}>
+            <p style={{ fontSize: '0.75rem', color: theme.textSub, lineHeight: 1.5, margin: 0 }}>
               {t(descKey)}
             </p>
           </button>
@@ -155,6 +141,9 @@ function ModeSelector({ mode, onChange }) {
 
 function FeaturesInputStep({ items, setItems, additionalContext, setAdditionalContext, onCompare, onReset, error, setError }) {
   const { t } = useLanguage();
+  const { theme } = useTheme();
+  const inputStyle = { ...BASE_INPUT_STYLE, border: `1.5px solid ${theme.borderMed}`, backgroundColor: theme.inputBg, color: theme.text };
+  const labelStyle = { display: 'block', fontSize: '0.78rem', fontWeight: '600', color: theme.textMed, marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' };
 
   const addItem = () => {
     if (items.length < MAX_ITEMS) setItems([...items, emptyItem()]);
@@ -188,7 +177,7 @@ function FeaturesInputStep({ items, setItems, additionalContext, setAdditionalCo
           }}>
             {items.length} / {MAX_ITEMS}
           </span>
-          <span style={{ fontSize: '0.78rem', color: '#9CA3AF' }}>
+          <span style={{ fontSize: '0.78rem', color: theme.textMuted }}>
             {items.length === MAX_ITEMS ? t('compare_max_reached') : `${spotsLeft} ${t('compare_spots')}`}
           </span>
         </div>
@@ -197,10 +186,10 @@ function FeaturesInputStep({ items, setItems, additionalContext, setAdditionalCo
           disabled={items.length >= MAX_ITEMS}
           style={{
             display: 'flex', alignItems: 'center', gap: '0.4rem',
-            padding: '0.5rem 1rem', backgroundColor: 'white',
-            border: `1.5px solid ${items.length >= MAX_ITEMS ? '#E5E7EB' : '#CC2027'}`,
+            padding: '0.5rem 1rem', backgroundColor: theme.cardBg,
+            border: `1.5px solid ${items.length >= MAX_ITEMS ? theme.borderMed : '#CC2027'}`,
             borderRadius: '0.5rem', fontSize: '0.8rem', fontWeight: '600',
-            color: items.length >= MAX_ITEMS ? '#9CA3AF' : '#CC2027',
+            color: items.length >= MAX_ITEMS ? theme.textMuted : '#CC2027',
             cursor: items.length >= MAX_ITEMS ? 'not-allowed' : 'pointer',
           }}
         >
@@ -212,15 +201,15 @@ function FeaturesInputStep({ items, setItems, additionalContext, setAdditionalCo
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.25rem' }}>
         {items.map((item, idx) => (
           <div key={idx} style={{
-            backgroundColor: 'white', borderRadius: '0.875rem',
-            border: '1px solid #F0F0F0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+            backgroundColor: theme.cardBg, borderRadius: '0.875rem',
+            border: `1px solid ${theme.border}`, boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
             overflow: 'hidden',
           }}>
             {/* Card header */}
             <div style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '0.8rem 1.25rem',
-              backgroundColor: '#F9FAFB', borderBottom: '1px solid #F0F0F0',
+              backgroundColor: theme.hoverBg, borderBottom: `1px solid ${theme.border}`,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                 <div style={{
@@ -230,7 +219,7 @@ function FeaturesInputStep({ items, setItems, additionalContext, setAdditionalCo
                 }}>
                   <span style={{ color: 'white', fontSize: '0.7rem', fontWeight: '700' }}>{idx + 1}</span>
                 </div>
-                <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#374151' }}>
+                <span style={{ fontSize: '0.85rem', fontWeight: '700', color: theme.textMed }}>
                   {t('compare_feature')} {idx + 1}
                 </span>
               </div>
@@ -258,7 +247,7 @@ function FeaturesInputStep({ items, setItems, additionalContext, setAdditionalCo
               <div>
                 <label style={labelStyle}>
                   {t('compare_category')}{' '}
-                  <span style={{ color: '#9CA3AF', fontWeight: '400', textTransform: 'none', fontSize: '0.7rem' }}>
+                  <span style={{ color: theme.textMuted, fontWeight: '400', textTransform: 'none', fontSize: '0.7rem' }}>
                     {t('compare_optional')}
                   </span>
                 </label>
@@ -273,9 +262,9 @@ function FeaturesInputStep({ items, setItems, additionalContext, setAdditionalCo
                         style={{
                           padding: '0.28rem 0.65rem', borderRadius: '9999px',
                           fontSize: '0.74rem', fontWeight: selected ? '600' : '400',
-                          border: `1.5px solid ${selected ? '#CC2027' : '#E5E7EB'}`,
+                          border: `1.5px solid ${selected ? '#CC2027' : theme.borderMed}`,
                           backgroundColor: selected ? '#FEF2F2' : 'transparent',
-                          color: selected ? '#CC2027' : '#6B7280',
+                          color: selected ? '#CC2027' : theme.textSub,
                           cursor: 'pointer', transition: 'all 0.12s',
                         }}
                       >
@@ -297,7 +286,7 @@ function FeaturesInputStep({ items, setItems, additionalContext, setAdditionalCo
                   maxLength={200}
                   style={inputStyle}
                   onFocus={(e) => (e.target.style.borderColor = '#CC2027')}
-                  onBlur={(e) => (e.target.style.borderColor = '#E5E7EB')}
+                  onBlur={(e) => (e.target.style.borderColor = theme.borderMed)}
                 />
               </div>
 
@@ -312,7 +301,7 @@ function FeaturesInputStep({ items, setItems, additionalContext, setAdditionalCo
                   maxLength={2000}
                   style={{ ...inputStyle, resize: 'vertical', minHeight: '88px', lineHeight: '1.6' }}
                   onFocus={(e) => (e.target.style.borderColor = '#CC2027')}
-                  onBlur={(e) => (e.target.style.borderColor = '#E5E7EB')}
+                  onBlur={(e) => (e.target.style.borderColor = theme.borderMed)}
                 />
               </div>
             </div>
@@ -332,9 +321,9 @@ function FeaturesInputStep({ items, setItems, additionalContext, setAdditionalCo
           type="button"
           onClick={onReset}
           style={{
-            padding: '0.7rem 1.5rem', backgroundColor: 'white',
-            border: '1.5px solid #E5E7EB', borderRadius: '0.5rem',
-            fontSize: '0.875rem', fontWeight: '500', color: '#6B7280', cursor: 'pointer',
+            padding: '0.7rem 1.5rem', backgroundColor: theme.cardBg,
+            border: `1.5px solid ${theme.borderMed}`, borderRadius: '0.5rem',
+            fontSize: '0.875rem', fontWeight: '500', color: theme.textSub, cursor: 'pointer',
           }}
         >
           {t('compare_clear_all')}
@@ -364,6 +353,7 @@ function FeaturesInputStep({ items, setItems, additionalContext, setAdditionalCo
 
 function TasksInputStep({ initialSelected, additionalContext, setAdditionalContext, onCompare, onReset, error, setError }) {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const [tasks, setTasks]       = useState([]);
   const [loadingTasks, setLoadingTasks] = useState(true);
   const [selected, setSelected] = useState(initialSelected || new Set());
@@ -405,23 +395,19 @@ function TasksInputStep({ initialSelected, additionalContext, setAdditionalConte
   };
 
   if (loadingTasks) return (
-    <div style={{ textAlign: 'center', padding: '3rem', color: '#6B7280' }}>
+    <div style={{ textAlign: 'center', padding: '3rem', color: theme.textSub }}>
       <Loader2 size={28} color="#CC2027" style={{ margin: '0 auto 0.75rem', animation: '_cmpSpin 0.9s linear infinite' }} />
       <p style={{ fontSize: '0.85rem' }}>{t('compare_loading_tasks_msg')}</p>
     </div>
   );
 
   if (tasks.length === 0) return (
-    <div style={{
-      backgroundColor: 'white', borderRadius: '0.875rem',
-      border: '1px solid #F0F0F0', padding: '3rem 2rem', textAlign: 'center',
-    }}>
-      <p style={{ fontSize: '0.85rem', fontWeight: '600', color: '#374151', marginBottom: '0.35rem' }}>
-        {t('compare_no_tasks_title')}
-      </p>
-      <p style={{ fontSize: '0.78rem', color: '#9CA3AF' }}>
-        {t('compare_no_tasks_hint')}
-      </p>
+    <div style={{ backgroundColor: theme.cardBg, borderRadius: '0.875rem', border: `1px solid ${theme.border}` }}>
+      <EmptyState
+        variant="compare"
+        title={t('compare_no_tasks_title')}
+        subtitle={t('compare_no_tasks_hint')}
+      />
     </div>
   );
 
@@ -435,14 +421,14 @@ function TasksInputStep({ initialSelected, additionalContext, setAdditionalConte
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <span style={{
             fontSize: '0.75rem', fontWeight: '700',
-            color: selected.size >= 2 ? '#CC2027' : '#6B7280',
-            backgroundColor: selected.size >= 2 ? '#FEF2F2' : '#F9FAFB',
-            border: `1px solid ${selected.size >= 2 ? '#FECACA' : '#E5E7EB'}`,
+            color: selected.size >= 2 ? '#CC2027' : theme.textSub,
+            backgroundColor: selected.size >= 2 ? '#FEF2F2' : theme.hoverBg,
+            border: `1px solid ${selected.size >= 2 ? '#FECACA' : theme.borderMed}`,
             padding: '0.25rem 0.625rem', borderRadius: '9999px',
           }}>
             {selected.size} / {MAX_ITEMS} {t('compare_selected')}
           </span>
-          <span style={{ fontSize: '0.78rem', color: '#9CA3AF' }}>
+          <span style={{ fontSize: '0.78rem', color: theme.textMuted }}>
             {selected.size < 2
               ? `${t('compare_select_min')} ${2 - selected.size}`
               : selected.size === MAX_ITEMS
@@ -454,7 +440,7 @@ function TasksInputStep({ initialSelected, additionalContext, setAdditionalConte
           <button
             onClick={() => setSelected(new Set())}
             style={{
-              fontSize: '0.75rem', color: '#6B7280', background: 'none',
+              fontSize: '0.75rem', color: theme.textSub, background: 'none',
               border: 'none', cursor: 'pointer', textDecoration: 'underline',
             }}
           >
@@ -478,15 +464,15 @@ function TasksInputStep({ initialSelected, additionalContext, setAdditionalConte
               key={task.id}
               onClick={() => !isDisabled && toggle(task.id)}
               style={{
-                backgroundColor: 'white', borderRadius: '0.75rem',
-                border: `2px solid ${isSelected ? '#CC2027' : '#F0F0F0'}`,
+                backgroundColor: theme.cardBg, borderRadius: '0.75rem',
+                border: `2px solid ${isSelected ? '#CC2027' : theme.border}`,
                 padding: '1rem', cursor: isDisabled ? 'not-allowed' : 'pointer',
                 opacity: isDisabled ? 0.45 : 1,
                 position: 'relative', transition: 'all 0.12s',
                 boxShadow: isSelected ? '0 0 0 3px rgba(204,32,39,0.1)' : '0 1px 3px rgba(0,0,0,0.04)',
               }}
               onMouseEnter={e => { if (!isDisabled && !isSelected) e.currentTarget.style.borderColor = '#FECACA'; }}
-              onMouseLeave={e => { if (!isSelected) e.currentTarget.style.borderColor = '#F0F0F0'; }}
+              onMouseLeave={e => { if (!isSelected) e.currentTarget.style.borderColor = theme.border; }}
             >
               {isSelected && (
                 <div style={{
@@ -499,12 +485,12 @@ function TasksInputStep({ initialSelected, additionalContext, setAdditionalConte
                 </div>
               )}
 
-              <p style={{ fontSize: '0.68rem', color: '#9CA3AF', marginBottom: '0.3rem' }}>
+              <p style={{ fontSize: '0.68rem', color: theme.textMuted, marginBottom: '0.3rem' }}>
                 {task.taskType}
               </p>
 
               <h4 style={{
-                fontSize: '0.85rem', fontWeight: '700', color: '#111827',
+                fontSize: '0.85rem', fontWeight: '700', color: theme.text,
                 marginBottom: '0.6rem', lineHeight: 1.4,
                 overflow: 'hidden', textOverflow: 'ellipsis',
                 display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
@@ -527,8 +513,8 @@ function TasksInputStep({ initialSelected, additionalContext, setAdditionalConte
                   <span style={{
                     padding: '0.15rem 0.5rem', borderRadius: '9999px',
                     fontSize: '0.65rem', fontWeight: '700',
-                    backgroundColor: '#F3F4F6', color: '#374151',
-                    border: '1px solid #E5E7EB',
+                    backgroundColor: theme.tagBg, color: theme.textMed,
+                    border: `1px solid ${theme.borderMed}`,
                   }}>
                     ⚡ {task.finalScore?.toFixed(1)}
                   </span>
@@ -551,9 +537,9 @@ function TasksInputStep({ initialSelected, additionalContext, setAdditionalConte
           type="button"
           onClick={onReset}
           style={{
-            padding: '0.7rem 1.5rem', backgroundColor: 'white',
-            border: '1.5px solid #E5E7EB', borderRadius: '0.5rem',
-            fontSize: '0.875rem', fontWeight: '500', color: '#6B7280', cursor: 'pointer',
+            padding: '0.7rem 1.5rem', backgroundColor: theme.cardBg,
+            border: `1.5px solid ${theme.borderMed}`, borderRadius: '0.5rem',
+            fontSize: '0.875rem', fontWeight: '500', color: theme.textSub, cursor: 'pointer',
           }}
         >
           {t('compare_clear')}
@@ -583,15 +569,18 @@ function TasksInputStep({ initialSelected, additionalContext, setAdditionalConte
 
 function ContextBox({ value, onChange, setError }) {
   const { t } = useLanguage();
+  const { theme } = useTheme();
+  const inputStyle = { ...BASE_INPUT_STYLE, border: `1.5px solid ${theme.borderMed}`, backgroundColor: theme.inputBg, color: theme.text };
+  const labelStyle = { display: 'block', fontSize: '0.78rem', fontWeight: '600', color: theme.textMed, marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' };
   return (
     <div style={{
-      backgroundColor: 'white', borderRadius: '0.875rem',
-      border: '1px solid #F0F0F0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+      backgroundColor: theme.cardBg, borderRadius: '0.875rem',
+      border: `1px solid ${theme.border}`, boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
       padding: '1.25rem', marginBottom: '1.25rem',
     }}>
       <label style={{ ...labelStyle, marginBottom: '0.6rem' }}>
         {t('compare_context_label')}{' '}
-        <span style={{ color: '#9CA3AF', fontWeight: '400', textTransform: 'none', fontSize: '0.7rem' }}>
+        <span style={{ color: theme.textMuted, fontWeight: '400', textTransform: 'none', fontSize: '0.7rem' }}>
           {t('compare_optional')}
         </span>
       </label>
@@ -602,9 +591,9 @@ function ContextBox({ value, onChange, setError }) {
         rows={2}
         style={{ ...inputStyle, resize: 'vertical', lineHeight: '1.6' }}
         onFocus={(e) => (e.target.style.borderColor = '#CC2027')}
-        onBlur={(e) => (e.target.style.borderColor = '#E5E7EB')}
+        onBlur={(e) => (e.target.style.borderColor = theme.borderMed)}
       />
-      <p style={{ fontSize: '0.72rem', color: '#9CA3AF', marginTop: '0.35rem' }}>
+      <p style={{ fontSize: '0.72rem', color: theme.textMuted, marginTop: '0.35rem' }}>
         {t('compare_context_hint')}
       </p>
     </div>
@@ -644,6 +633,7 @@ function AiNote({ count, mode }) {
 
 function LoadingStep({ items }) {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   return (
     <PageWrapper title={t('compare_title')} subtitle={t('compare_analyzing_subtitle')}>
       <style>{`
@@ -655,20 +645,20 @@ function LoadingStep({ items }) {
 
       <div style={{ maxWidth: '520px' }}>
         <div style={{
-          backgroundColor: 'white', borderRadius: '1rem',
+          backgroundColor: theme.cardBg, borderRadius: '1rem',
           padding: '3rem 2rem', textAlign: 'center',
-          border: '1px solid #F0F0F0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+          border: `1px solid ${theme.border}`, boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
         }}>
           <div style={{
             width: '60px', height: '60px', borderRadius: '50%',
-            border: '4px solid #F0F0F0', borderTopColor: '#CC2027',
+            border: `4px solid ${theme.border}`, borderTopColor: '#CC2027',
             margin: '0 auto 1.5rem',
           }} className="_cmp-spinner" />
 
-          <h3 style={{ fontSize: '1.05rem', fontWeight: '700', color: '#111827', marginBottom: '0.4rem' }}>
+          <h3 style={{ fontSize: '1.05rem', fontWeight: '700', color: theme.text, marginBottom: '0.4rem' }}>
             {t('compare_analyzing')} {items.length} {t('compare_items')}
           </h3>
-          <p style={{ fontSize: '0.82rem', color: '#9CA3AF', marginBottom: '2rem', lineHeight: '1.7' }}>
+          <p style={{ fontSize: '0.82rem', color: theme.textMuted, marginBottom: '2rem', lineHeight: '1.7' }}>
             {t('compare_applying')}
           </p>
 
@@ -680,7 +670,7 @@ function LoadingStep({ items }) {
                 style={{
                   display: 'flex', alignItems: 'center', gap: '0.75rem',
                   padding: '0.55rem 0.875rem', borderRadius: '0.5rem',
-                  backgroundColor: '#F9FAFB', border: '1px solid #F0F0F0',
+                  backgroundColor: theme.hoverBg, border: `1px solid ${theme.border}`,
                   animationDelay: `${i * 0.07}s`,
                 }}
               >
@@ -691,7 +681,7 @@ function LoadingStep({ items }) {
                 }}>
                   <span style={{ color: 'white', fontSize: '0.65rem', fontWeight: '700' }}>{i + 1}</span>
                 </div>
-                <span style={{ fontSize: '0.84rem', color: '#374151', fontWeight: '500' }}>
+                <span style={{ fontSize: '0.84rem', color: theme.textMed, fontWeight: '500' }}>
                   {item.title || `${t('compare_feature')} ${i + 1}`}
                 </span>
               </div>
@@ -707,6 +697,7 @@ function LoadingStep({ items }) {
 
 function ResultsStep({ results, onReset, mode }) {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const displayResults = useTranslatedCompareResults(results);
   const maxScore = Math.max(...displayResults.rankedItems.map(r => r.finalScore), 1);
 
@@ -724,9 +715,9 @@ function ResultsStep({ results, onReset, mode }) {
             style={{
               display: 'flex', alignItems: 'center', gap: '0.45rem',
               padding: '0.6rem 1.2rem',
-              backgroundColor: 'white', border: '1.5px solid #E5E7EB',
+              backgroundColor: theme.cardBg, border: `1.5px solid ${theme.borderMed}`,
               borderRadius: '0.5rem', fontSize: '0.85rem',
-              fontWeight: '500', color: '#374151', cursor: 'pointer',
+              fontWeight: '500', color: theme.textMed, cursor: 'pointer',
             }}
           >
             <RotateCcw size={14} /> {t('compare_new_comparison')}
@@ -752,18 +743,18 @@ function ResultsStep({ results, onReset, mode }) {
           </div>
 
           <div style={{
-            backgroundColor: 'white', borderRadius: '0.875rem',
-            padding: '1.5rem', border: '1px solid #F0F0F0',
+            backgroundColor: theme.cardBg, borderRadius: '0.875rem',
+            padding: '1.5rem', border: `1px solid ${theme.border}`,
             boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
               <span style={{ fontSize: '1rem' }}>📊</span>
               <span style={{
-                color: '#374151', fontSize: '0.72rem', fontWeight: '700',
+                color: theme.textMed, fontSize: '0.72rem', fontWeight: '700',
                 textTransform: 'uppercase', letterSpacing: '0.07em',
               }}>{t('compare_overall_analysis')}</span>
             </div>
-            <p style={{ color: '#6B7280', fontSize: '0.875rem', lineHeight: '1.75' }}>
+            <p style={{ color: theme.textSub, fontSize: '0.875rem', lineHeight: '1.75' }}>
               {displayResults.overallAnalysis}
             </p>
           </div>
@@ -780,8 +771,8 @@ function ResultsStep({ results, onReset, mode }) {
 
             return (
               <div key={item.rank} style={{
-                backgroundColor: 'white', borderRadius: '0.875rem',
-                border: `1.5px solid ${item.rank <= 3 ? meta.border : '#F0F0F0'}`,
+                backgroundColor: theme.cardBg, borderRadius: '0.875rem',
+                border: `1.5px solid ${item.rank <= 3 ? meta.border : theme.border}`,
                 boxShadow: item.rank === 1
                   ? `0 0 0 1px ${meta.border}, 0 4px 12px rgba(0,0,0,0.06)`
                   : '0 1px 3px rgba(0,0,0,0.04)',
@@ -791,8 +782,8 @@ function ResultsStep({ results, onReset, mode }) {
                 {/* Header */}
                 <div style={{
                   padding: '1.25rem 1.5rem',
-                  borderBottom: '1px solid #F9FAFB',
-                  backgroundColor: item.rank === 1 ? `${meta.lightBg}80` : 'white',
+                  borderBottom: `1px solid ${theme.border}`,
+                  backgroundColor: item.rank === 1 ? `${meta.lightBg}80` : theme.cardBg,
                   display: 'flex', alignItems: 'flex-start',
                   justifyContent: 'space-between', gap: '1rem',
                 }}>
@@ -825,9 +816,9 @@ function ResultsStep({ results, onReset, mode }) {
                         {item.category && (
                           <span style={{
                             fontSize: '0.68rem', fontWeight: '600',
-                            color: '#6B7280', backgroundColor: '#F3F4F6',
+                            color: theme.textSub, backgroundColor: theme.tagBg,
                             padding: '0.1rem 0.45rem', borderRadius: '9999px',
-                            border: '1px solid #E5E7EB',
+                            border: `1px solid ${theme.borderMed}`,
                           }}>
                             {item.category}
                           </span>
@@ -843,7 +834,7 @@ function ResultsStep({ results, onReset, mode }) {
                           {mode === 'tasks' ? t('compare_task_pill') : t('compare_feature_pill')}
                         </span>
                       </div>
-                      <h3 style={{ fontSize: '1rem', fontWeight: '700', color: '#111827', lineHeight: 1.3 }}>
+                      <h3 style={{ fontSize: '1rem', fontWeight: '700', color: theme.text, lineHeight: 1.3 }}>
                         {item.title}
                       </h3>
                     </div>
@@ -859,7 +850,7 @@ function ResultsStep({ results, onReset, mode }) {
                       {item.finalScore.toFixed(1)}
                     </div>
                     <div style={{
-                      fontSize: '0.6rem', color: '#9CA3AF', fontWeight: '600',
+                      fontSize: '0.6rem', color: theme.textMuted, fontWeight: '600',
                       textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '2px',
                     }}>{t('compare_score_label')}</div>
                   </div>
@@ -868,7 +859,7 @@ function ResultsStep({ results, onReset, mode }) {
                 {/* Badges */}
                 <div style={{
                   padding: '0.6rem 1.5rem',
-                  borderBottom: '1px solid #F9FAFB',
+                  borderBottom: `1px solid ${theme.border}`,
                   display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center',
                 }}>
                   <Badge label={`Kano: ${item.kanoCategory}`} colors={kano} />
@@ -876,9 +867,9 @@ function ResultsStep({ results, onReset, mode }) {
                 </div>
 
                 {/* RICE breakdown */}
-                <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid #F9FAFB' }}>
+                <div style={{ padding: '1rem 1.5rem', borderBottom: `1px solid ${theme.border}` }}>
                   <p style={{
-                    fontSize: '0.68rem', fontWeight: '700', color: '#9CA3AF',
+                    fontSize: '0.68rem', fontWeight: '700', color: theme.textMuted,
                     textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.75rem',
                   }}>
                     {t('compare_rice_breakdown')}
@@ -892,13 +883,13 @@ function ResultsStep({ results, onReset, mode }) {
                       { label: t('effort'),     value: item.effort.toFixed(1) },
                     ].map((m) => (
                       <div key={m.label} style={{
-                        backgroundColor: '#F9FAFB', border: '1px solid #F0F0F0',
+                        backgroundColor: theme.hoverBg, border: `1px solid ${theme.border}`,
                         borderRadius: '0.5rem', padding: '0.4rem 0.7rem',
                         textAlign: 'center', minWidth: '68px',
                       }}>
-                        <div style={{ fontSize: '0.9rem', fontWeight: '700', color: '#111827' }}>{m.value}</div>
+                        <div style={{ fontSize: '0.9rem', fontWeight: '700', color: theme.text }}>{m.value}</div>
                         <div style={{
-                          fontSize: '0.58rem', color: '#9CA3AF', fontWeight: '600',
+                          fontSize: '0.58rem', color: theme.textMuted, fontWeight: '600',
                           textTransform: 'uppercase', letterSpacing: '0.04em',
                         }}>{m.label}</div>
                       </div>
@@ -920,8 +911,8 @@ function ResultsStep({ results, onReset, mode }) {
                       }}>RICE</div>
                     </div>
 
-                    <span style={{ color: '#9CA3AF', fontSize: '0.78rem' }}>× {multiplier}</span>
-                    <span style={{ color: '#D1D5DB', fontSize: '1rem' }}>=</span>
+                    <span style={{ color: theme.textMuted, fontSize: '0.78rem' }}>× {multiplier}</span>
+                    <span style={{ color: theme.borderMed, fontSize: '1rem' }}>=</span>
 
                     <div style={{
                       backgroundColor: meta.lightBg, border: `1px solid ${meta.border}`,
@@ -932,7 +923,7 @@ function ResultsStep({ results, onReset, mode }) {
                         {item.finalScore.toFixed(1)}
                       </div>
                       <div style={{
-                        fontSize: '0.58rem', color: '#9CA3AF', fontWeight: '600',
+                        fontSize: '0.58rem', color: theme.textMuted, fontWeight: '600',
                         textTransform: 'uppercase', letterSpacing: '0.04em',
                       }}>{t('compare_final_label')}</div>
                     </div>
@@ -941,7 +932,7 @@ function ResultsStep({ results, onReset, mode }) {
                   {/* Score bar */}
                   <div style={{ marginTop: '0.875rem' }}>
                     <div style={{
-                      height: '5px', backgroundColor: '#F3F4F6',
+                      height: '5px', backgroundColor: theme.tagBg,
                       borderRadius: '9999px', overflow: 'hidden',
                     }}>
                       <div style={{
@@ -957,7 +948,7 @@ function ResultsStep({ results, onReset, mode }) {
                 <div style={{ padding: '1rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                   <div style={{ display: 'flex', gap: '0.6rem' }}>
                     <span style={{ fontSize: '0.85rem', flexShrink: 0, marginTop: '1px' }}>📐</span>
-                    <p style={{ fontSize: '0.83rem', color: '#6B7280', lineHeight: '1.65', margin: 0 }}>
+                    <p style={{ fontSize: '0.83rem', color: theme.textSub, lineHeight: '1.65', margin: 0 }}>
                       <span style={{ fontWeight: '700', color: kano.text }}>Kano · </span>
                       {item.kanoReasoning}
                     </p>
@@ -965,7 +956,7 @@ function ResultsStep({ results, onReset, mode }) {
 
                   <div style={{ display: 'flex', gap: '0.6rem' }}>
                     <span style={{ fontSize: '0.85rem', flexShrink: 0, marginTop: '1px' }}>📋</span>
-                    <p style={{ fontSize: '0.83rem', color: '#6B7280', lineHeight: '1.65', margin: 0 }}>
+                    <p style={{ fontSize: '0.83rem', color: theme.textSub, lineHeight: '1.65', margin: 0 }}>
                       <span style={{ fontWeight: '700', color: moscow.text }}>MoSCoW · </span>
                       {item.moscowReasoning}
                     </p>
@@ -973,8 +964,8 @@ function ResultsStep({ results, onReset, mode }) {
 
                   <div style={{ display: 'flex', gap: '0.6rem' }}>
                     <span style={{ fontSize: '0.85rem', flexShrink: 0, marginTop: '1px' }}>💡</span>
-                    <p style={{ fontSize: '0.83rem', color: '#6B7280', lineHeight: '1.65', margin: 0 }}>
-                      <span style={{ fontWeight: '700', color: '#374151' }}>{t('compare_why_rank')} · </span>
+                    <p style={{ fontSize: '0.83rem', color: theme.textSub, lineHeight: '1.65', margin: 0 }}>
+                      <span style={{ fontWeight: '700', color: theme.textMed }}>{t('compare_why_rank')} · </span>
                       {item.reasoning}
                     </p>
                   </div>
@@ -982,12 +973,12 @@ function ResultsStep({ results, onReset, mode }) {
                   {item.versusNext && (
                     <div style={{
                       marginTop: '0.2rem', padding: '0.625rem 0.875rem',
-                      backgroundColor: '#F9FAFB', border: '1px solid #F0F0F0',
+                      backgroundColor: theme.hoverBg, border: `1px solid ${theme.border}`,
                       borderRadius: '0.5rem', display: 'flex', gap: '0.6rem', alignItems: 'flex-start',
                     }}>
                       <span style={{ fontSize: '0.85rem', flexShrink: 0, marginTop: '1px' }}>↓</span>
-                      <p style={{ fontSize: '0.83rem', color: '#6B7280', lineHeight: '1.65', margin: 0 }}>
-                        <span style={{ fontWeight: '700', color: '#9CA3AF' }}>
+                      <p style={{ fontSize: '0.83rem', color: theme.textSub, lineHeight: '1.65', margin: 0 }}>
+                        <span style={{ fontWeight: '700', color: theme.textMuted }}>
                           {t('compare_outranks')}{item.rank + 1} ·{' '}
                         </span>
                         {item.versusNext}

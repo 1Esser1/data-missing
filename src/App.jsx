@@ -2,11 +2,13 @@ import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import useAuthStore from './store/authStore';
 import { LanguageProvider } from './i18n/LanguageContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import wsService from './services/websocketService';
 import CommandPalette from './components/layout/CommandPalette';
 import TaskDetail from './pages/TaskDetail';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import VerifyEmail from './pages/VerifyEmail';
 import Dashboard from './pages/Dashboard';
 import Tasks from './pages/Tasks';
 import Backlog from './pages/Backlog';
@@ -24,6 +26,7 @@ import SprintPage from './pages/Sprint';
 import WorkloadPage from './pages/Workload';
 import SlaPage from './pages/Sla';
 import ReportPage from './pages/Report';
+import TaskRelations from './pages/TaskRelations';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
@@ -58,12 +61,14 @@ function App() {
   }, [isAuthenticated]);
 
   return (
+    <ThemeProvider>
     <LanguageProvider>
       <BrowserRouter>
         <CommandPalette />
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
           <Route path="/tasks/:id" element={<ProtectedRoute><TaskDetail /></ProtectedRoute>} />
@@ -81,12 +86,14 @@ function App() {
           <Route path="/workload" element={<PrivilegedRoute><WorkloadPage /></PrivilegedRoute>} />
           <Route path="/sla" element={<ProtectedRoute><SlaPage /></ProtectedRoute>} />
           <Route path="/report" element={<PrivilegedRoute><ReportPage /></PrivilegedRoute>} />
+          <Route path="/task-relations" element={<ProtectedRoute><TaskRelations /></ProtectedRoute>} />
           <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </BrowserRouter>
     </LanguageProvider>
+    </ThemeProvider>
   );
 }
 

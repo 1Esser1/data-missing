@@ -6,6 +6,7 @@ import {
 import PageWrapper from '../components/layout/PageWrapper';
 import adminService from '../services/adminService';
 import { useAutoT } from '../i18n/LanguageContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 const STRINGS = {
   page_title:        'Admin Panel',
@@ -150,6 +151,7 @@ function StatusBadge({ user, tx }) {
 
 /* ─── View Details Modal ─── */
 function UserDetailModal({ user, onClose, tx }) {
+  const { theme } = useTheme();
   const formatDate = (d) => d
     ? new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
     : '—';
@@ -161,12 +163,12 @@ function UserDetailModal({ user, onClose, tx }) {
       zIndex: 1000, padding: '1rem',
     }}>
       <div style={{
-        backgroundColor: 'white', borderRadius: '1rem',
+        backgroundColor: theme.cardBg, borderRadius: '1rem',
         width: '100%', maxWidth: '480px',
         boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
         overflow: 'hidden',
       }}>
-        {/* Header */}
+        {/* Header — intentionally dark navy */}
         <div style={{
           backgroundColor: '#1A1A2E', padding: '1.5rem',
           display: 'flex', alignItems: 'center', gap: '1rem',
@@ -187,7 +189,7 @@ function UserDetailModal({ user, onClose, tx }) {
             <p style={{ fontSize: '0.82rem', color: '#9CA3AF' }}>{user.email}</p>
           </div>
           <button onClick={onClose} style={{
-            background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', flexShrink: 0,
+            background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF', flexShrink: 0,
           }}>
             <X size={20} />
           </button>
@@ -206,16 +208,16 @@ function UserDetailModal({ user, onClose, tx }) {
           ].map(({ label, value }) => (
             <div key={label} style={{
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              paddingBottom: '0.75rem', borderBottom: '1px solid #F9FAFB',
+              paddingBottom: '0.75rem', borderBottom: `1px solid ${theme.border}`,
             }}>
-              <span style={{ fontSize: '0.8rem', color: '#9CA3AF', fontWeight: '500' }}>{label}</span>
-              <span style={{ fontSize: '0.82rem', color: '#111827', fontWeight: '600' }}>{value}</span>
+              <span style={{ fontSize: '0.8rem', color: theme.textMuted, fontWeight: '500' }}>{label}</span>
+              <span style={{ fontSize: '0.82rem', color: theme.text, fontWeight: '600' }}>{value}</span>
             </div>
           ))}
         </div>
 
-        <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid #F0F0F0', display: 'flex', justifyContent: 'flex-end' }}>
-          <button onClick={onClose} style={{ padding: '0.5rem 1.25rem', backgroundColor: '#F3F4F6', border: 'none', borderRadius: '0.5rem', fontSize: '0.82rem', fontWeight: '600', color: '#374151', cursor: 'pointer' }}>
+        <div style={{ padding: '1rem 1.5rem', borderTop: `1px solid ${theme.border}`, display: 'flex', justifyContent: 'flex-end' }}>
+          <button onClick={onClose} style={{ padding: '0.5rem 1.25rem', backgroundColor: theme.tagBg, border: 'none', borderRadius: '0.5rem', fontSize: '0.82rem', fontWeight: '600', color: theme.textMed, cursor: 'pointer' }}>
             {tx.close}
           </button>
         </div>
@@ -226,6 +228,7 @@ function UserDetailModal({ user, onClose, tx }) {
 
 /* ─── Edit User Modal ─── */
 function EditUserModal({ user, onClose, onSave, tx }) {
+  const { theme } = useTheme();
   const [name, setName] = useState(user.name || '');
   const [role, setRole] = useState(user.role || 'DEVELOPER');
   const [isSaving, setIsSaving] = useState(false);
@@ -250,7 +253,7 @@ function EditUserModal({ user, onClose, onSave, tx }) {
       zIndex: 1000, padding: '1rem',
     }}>
       <div style={{
-        backgroundColor: 'white', borderRadius: '1rem',
+        backgroundColor: theme.cardBg, borderRadius: '1rem',
         width: '100%', maxWidth: '440px',
         boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
         overflow: 'hidden',
@@ -258,17 +261,17 @@ function EditUserModal({ user, onClose, onSave, tx }) {
         {/* Header */}
         <div style={{
           padding: '1.25rem 1.5rem',
-          borderBottom: '1px solid #F0F0F0',
+          borderBottom: `1px solid ${theme.border}`,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <Avatar user={user} size={36} />
             <div>
-              <p style={{ fontSize: '0.9rem', fontWeight: '700', color: '#111827' }}>{tx.edit_user}</p>
-              <p style={{ fontSize: '0.75rem', color: '#9CA3AF' }}>{user.email}</p>
+              <p style={{ fontSize: '0.9rem', fontWeight: '700', color: theme.text }}>{tx.edit_user}</p>
+              <p style={{ fontSize: '0.75rem', color: theme.textMuted }}>{user.email}</p>
             </div>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280' }}>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.textSub }}>
             <X size={20} />
           </button>
         </div>
@@ -280,7 +283,7 @@ function EditUserModal({ user, onClose, onSave, tx }) {
           <div>
             <label style={{
               display: 'block', fontSize: '0.75rem', fontWeight: '600',
-              color: '#374151', marginBottom: '0.4rem',
+              color: theme.textMed, marginBottom: '0.4rem',
               textTransform: 'uppercase', letterSpacing: '0.05em',
             }}>
               {tx.full_name}
@@ -290,12 +293,12 @@ function EditUserModal({ user, onClose, onSave, tx }) {
               onChange={e => setName(e.target.value)}
               style={{
                 width: '100%', padding: '0.65rem 0.875rem',
-                border: '1.5px solid #E5E7EB', borderRadius: '0.5rem',
+                border: `1.5px solid ${theme.borderMed}`, borderRadius: '0.5rem',
                 fontSize: '0.875rem', outline: 'none', boxSizing: 'border-box',
-                backgroundColor: '#FAFAFA', color: '#111827',
+                backgroundColor: theme.inputBg, color: theme.text,
               }}
               onFocus={e => e.target.style.borderColor = '#CC2027'}
-              onBlur={e => e.target.style.borderColor = '#E5E7EB'}
+              onBlur={e => e.target.style.borderColor = theme.borderMed}
             />
           </div>
 
@@ -303,7 +306,7 @@ function EditUserModal({ user, onClose, onSave, tx }) {
           <div>
             <label style={{
               display: 'block', fontSize: '0.75rem', fontWeight: '600',
-              color: '#374151', marginBottom: '0.5rem',
+              color: theme.textMed, marginBottom: '0.5rem',
               textTransform: 'uppercase', letterSpacing: '0.05em',
             }}>
               {tx.role_label}
@@ -320,12 +323,12 @@ function EditUserModal({ user, onClose, onSave, tx }) {
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                       padding: '0.6rem 0.875rem', borderRadius: '0.5rem', cursor: 'pointer',
-                      border: `1.5px solid ${selected ? s.color : '#E5E7EB'}`,
-                      backgroundColor: selected ? s.bg : 'white',
+                      border: `1.5px solid ${selected ? s.color : theme.borderMed}`,
+                      backgroundColor: selected ? s.bg : theme.cardBg,
                       transition: 'all 0.12s',
                     }}
                   >
-                    <span style={{ fontSize: '0.82rem', fontWeight: selected ? '700' : '500', color: selected ? s.color : '#374151' }}>
+                    <span style={{ fontSize: '0.82rem', fontWeight: selected ? '700' : '500', color: selected ? s.color : theme.textMed }}>
                       {getRoleLabel(r, tx)}
                     </span>
                     {selected && (
@@ -344,10 +347,10 @@ function EditUserModal({ user, onClose, onSave, tx }) {
 
         {/* Footer */}
         <div style={{
-          padding: '1rem 1.5rem', borderTop: '1px solid #F0F0F0',
+          padding: '1rem 1.5rem', borderTop: `1px solid ${theme.border}`,
           display: 'flex', justifyContent: 'flex-end', gap: '0.5rem',
         }}>
-          <button onClick={onClose} style={{ padding: '0.5rem 1.25rem', backgroundColor: 'white', border: '1.5px solid #E5E7EB', borderRadius: '0.5rem', fontSize: '0.82rem', fontWeight: '600', color: '#6B7280', cursor: 'pointer' }}>
+          <button onClick={onClose} style={{ padding: '0.5rem 1.25rem', backgroundColor: theme.cardBg, border: `1.5px solid ${theme.borderMed}`, borderRadius: '0.5rem', fontSize: '0.82rem', fontWeight: '600', color: theme.textSub, cursor: 'pointer' }}>
             {tx.cancel}
           </button>
           <button onClick={handleSave} disabled={isSaving} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1.25rem', backgroundColor: isSaving ? '#9CA3AF' : '#CC2027', color: 'white', border: 'none', borderRadius: '0.5rem', fontSize: '0.82rem', fontWeight: '600', cursor: isSaving ? 'not-allowed' : 'pointer' }}>
@@ -363,6 +366,7 @@ function EditUserModal({ user, onClose, onSave, tx }) {
 /* ─── Main Admin Page ─── */
 function Admin() {
   const tx = useAutoT(STRINGS);
+  const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState('pending');
 
   // Pending users
@@ -558,8 +562,8 @@ function Admin() {
           },
         ].map(stat => (
           <div key={stat.label} style={{
-            backgroundColor: 'white', borderRadius: '0.75rem',
-            padding: '1.25rem', border: '1px solid #F0F0F0',
+            backgroundColor: theme.cardBg, borderRadius: '0.75rem',
+            padding: '1.25rem', border: `1px solid ${theme.border}`,
             boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
             display: 'flex', alignItems: 'center', gap: '1rem',
           }}>
@@ -571,8 +575,8 @@ function Admin() {
               {stat.icon}
             </div>
             <div>
-              <p style={{ fontSize: '1.5rem', fontWeight: '700', color: '#111827' }}>{stat.value}</p>
-              <p style={{ fontSize: '0.78rem', color: '#9CA3AF' }}>{stat.label}</p>
+              <p style={{ fontSize: '1.5rem', fontWeight: '700', color: theme.text }}>{stat.value}</p>
+              <p style={{ fontSize: '0.78rem', color: theme.textMuted }}>{stat.label}</p>
             </div>
           </div>
         ))}
@@ -580,8 +584,8 @@ function Admin() {
 
       {/* AI Provider selector */}
       <div style={{
-        backgroundColor: 'white', borderRadius: '0.75rem',
-        border: '1px solid #F0F0F0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+        backgroundColor: theme.cardBg, borderRadius: '0.75rem',
+        border: `1px solid ${theme.border}`, boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
         padding: '1.25rem 1.5rem', marginBottom: '1.5rem',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem' }}>
@@ -593,8 +597,8 @@ function Admin() {
             <Bot size={16} color="#4F6EF7" />
           </div>
           <div>
-            <p style={{ fontSize: '0.9rem', fontWeight: '700', color: '#111827' }}>{tx.ai_title}</p>
-            <p style={{ fontSize: '0.75rem', color: '#9CA3AF' }}>{tx.ai_subtitle}</p>
+            <p style={{ fontSize: '0.9rem', fontWeight: '700', color: theme.text }}>{tx.ai_title}</p>
+            <p style={{ fontSize: '0.75rem', color: theme.textMuted }}>{tx.ai_subtitle}</p>
           </div>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '0.875rem' }}>
@@ -602,14 +606,14 @@ function Admin() {
             <button key={p.value} onClick={() => setAiProvider(p.value)} style={{
               display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
               padding: '0.65rem 1rem', borderRadius: '0.5rem', cursor: 'pointer',
-              border: `2px solid ${aiProvider === p.value ? '#4F6EF7' : '#E5E7EB'}`,
-              backgroundColor: aiProvider === p.value ? '#F0F4FF' : 'white',
+              border: `2px solid ${aiProvider === p.value ? '#4F6EF7' : theme.borderMed}`,
+              backgroundColor: aiProvider === p.value ? '#F0F4FF' : theme.cardBg,
               minWidth: '110px', transition: 'all 0.15s',
             }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: '700', color: aiProvider === p.value ? '#4F6EF7' : '#374151' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: '700', color: aiProvider === p.value ? '#4F6EF7' : theme.textMed }}>
                 {p.label}
               </span>
-              <span style={{ fontSize: '0.68rem', color: '#9CA3AF', marginTop: '0.1rem' }}>{p.description}</span>
+              <span style={{ fontSize: '0.68rem', color: theme.textMuted, marginTop: '0.1rem' }}>{p.description}</span>
             </button>
           ))}
         </div>
@@ -628,7 +632,7 @@ function Admin() {
       {/* Tab bar */}
       <div style={{
         display: 'flex', gap: '0.25rem',
-        backgroundColor: '#F9FAFB', borderRadius: '0.625rem',
+        backgroundColor: theme.hoverBg, borderRadius: '0.625rem',
         padding: '0.25rem', marginBottom: '1.25rem',
         width: 'fit-content',
       }}>
@@ -639,8 +643,8 @@ function Admin() {
           <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
             display: 'flex', alignItems: 'center', gap: '0.4rem',
             padding: '0.5rem 1.1rem', borderRadius: '0.4rem', border: 'none',
-            backgroundColor: activeTab === tab.key ? 'white' : 'transparent',
-            color: activeTab === tab.key ? '#111827' : '#6B7280',
+            backgroundColor: activeTab === tab.key ? theme.cardBg : 'transparent',
+            color: activeTab === tab.key ? theme.text : theme.textSub,
             fontWeight: activeTab === tab.key ? '700' : '500',
             fontSize: '0.82rem', cursor: 'pointer',
             boxShadow: activeTab === tab.key ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
@@ -650,8 +654,8 @@ function Admin() {
             {tab.count != null && tab.count > 0 && (
               <span style={{
                 fontSize: '0.68rem', fontWeight: '700',
-                backgroundColor: activeTab === tab.key ? '#FEF2F2' : '#E5E7EB',
-                color: activeTab === tab.key ? '#CC2027' : '#6B7280',
+                backgroundColor: activeTab === tab.key ? '#FEF2F2' : theme.tagBg,
+                color: activeTab === tab.key ? '#CC2027' : theme.textSub,
                 padding: '0.1rem 0.45rem', borderRadius: '9999px',
               }}>
                 {tab.count}
@@ -665,8 +669,8 @@ function Admin() {
       {activeTab === 'pending' && (
         <>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h3 style={{ fontSize: '0.9rem', fontWeight: '700', color: '#111827' }}>{tx.pending_header}</h3>
-            <button onClick={loadPendingUsers} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 0.85rem', backgroundColor: 'white', border: '1.5px solid #E5E7EB', borderRadius: '0.5rem', fontSize: '0.78rem', color: '#6B7280', cursor: 'pointer' }}>
+            <h3 style={{ fontSize: '0.9rem', fontWeight: '700', color: theme.text }}>{tx.pending_header}</h3>
+            <button onClick={loadPendingUsers} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 0.85rem', backgroundColor: theme.cardBg, border: `1.5px solid ${theme.borderMed}`, borderRadius: '0.5rem', fontSize: '0.78rem', color: theme.textSub, cursor: 'pointer' }}>
               <RefreshCw size={13} />{tx.refresh}
             </button>
           </div>
@@ -678,16 +682,16 @@ function Admin() {
           )}
 
           {pendingLoading && (
-            <div style={{ textAlign: 'center', padding: '3rem', color: '#9CA3AF' }}>
+            <div style={{ textAlign: 'center', padding: '3rem', color: theme.textMuted }}>
               <p>{tx.loading_pending}</p>
             </div>
           )}
 
           {!pendingLoading && pendingUsers.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '3rem', backgroundColor: 'white', borderRadius: '0.75rem', border: '1px solid #F0F0F0' }}>
+            <div style={{ textAlign: 'center', padding: '3rem', backgroundColor: theme.cardBg, borderRadius: '0.75rem', border: `1px solid ${theme.border}` }}>
               <CheckCircle size={32} color="#16A34A" style={{ marginBottom: '0.75rem' }} />
-              <p style={{ fontWeight: '600', color: '#111827', marginBottom: '0.25rem' }}>{tx.all_caught_up}</p>
-              <p style={{ color: '#9CA3AF', fontSize: '0.875rem' }}>{tx.no_pending}</p>
+              <p style={{ fontWeight: '600', color: theme.text, marginBottom: '0.25rem' }}>{tx.all_caught_up}</p>
+              <p style={{ color: theme.textMuted, fontSize: '0.875rem' }}>{tx.no_pending}</p>
             </div>
           )}
 
@@ -696,8 +700,8 @@ function Admin() {
               const isProcessing = processingId === user.id;
               return (
                 <div key={user.id} style={{
-                  backgroundColor: 'white', borderRadius: '0.75rem',
-                  border: '1px solid #F0F0F0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                  backgroundColor: theme.cardBg, borderRadius: '0.75rem',
+                  border: `1px solid ${theme.border}`, boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
                   padding: '1.25rem 1.5rem',
                   display: 'flex', alignItems: 'center', gap: '1.25rem',
                 }}>
@@ -705,13 +709,13 @@ function Admin() {
 
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
-                      <p style={{ fontSize: '0.9rem', fontWeight: '600', color: '#111827' }}>{user.name}</p>
+                      <p style={{ fontSize: '0.9rem', fontWeight: '600', color: theme.text }}>{user.name}</p>
                       {user.emailVerified && <span style={{ color: '#3B82F6', fontSize: '0.75rem' }} title="Email verified">✓</span>}
                     </div>
-                    <p style={{ fontSize: '0.8rem', color: '#6B7280', marginBottom: '0.3rem' }}>{user.email}</p>
+                    <p style={{ fontSize: '0.8rem', color: theme.textSub, marginBottom: '0.3rem' }}>{user.email}</p>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <RoleBadge role={user.role} tx={tx} />
-                      <span style={{ fontSize: '0.72rem', color: '#9CA3AF' }}>{tx.registered} {formatDate(user.createdAt)}</span>
+                      <span style={{ fontSize: '0.72rem', color: theme.textMuted }}>{tx.registered} {formatDate(user.createdAt)}</span>
                     </div>
                   </div>
 
@@ -722,9 +726,9 @@ function Admin() {
                   <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
                     <button onClick={() => setViewUser(user)} style={{
                       display: 'flex', alignItems: 'center', gap: '0.35rem',
-                      padding: '0.5rem 0.85rem', backgroundColor: 'white',
-                      border: '1.5px solid #E5E7EB', borderRadius: '0.5rem',
-                      fontSize: '0.8rem', color: '#6B7280', cursor: 'pointer',
+                      padding: '0.5rem 0.85rem', backgroundColor: theme.cardBg,
+                      border: `1.5px solid ${theme.borderMed}`, borderRadius: '0.5rem',
+                      fontSize: '0.8rem', color: theme.textSub, cursor: 'pointer',
                     }}>
                       <Eye size={14} />
                     </button>
@@ -738,7 +742,7 @@ function Admin() {
                       <CheckCircle size={14} />
                       {isProcessing ? tx.processing : tx.approve}
                     </button>
-                    <button onClick={() => handleReject(user.id, user.name)} disabled={isProcessing} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.5rem 1rem', backgroundColor: 'white', color: '#DC2626', border: '1.5px solid #FECACA', borderRadius: '0.5rem', fontSize: '0.8rem', fontWeight: '600', cursor: isProcessing ? 'not-allowed' : 'pointer' }}>
+                    <button onClick={() => handleReject(user.id, user.name)} disabled={isProcessing} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.5rem 1rem', backgroundColor: theme.cardBg, color: '#DC2626', border: '1.5px solid #FECACA', borderRadius: '0.5rem', fontSize: '0.8rem', fontWeight: '600', cursor: isProcessing ? 'not-allowed' : 'pointer' }}>
                       <XCircle size={14} />{tx.reject}
                     </button>
                   </div>
@@ -760,14 +764,14 @@ function Admin() {
               onChange={e => setSearchQuery(e.target.value)}
               style={{
                 flex: 1, minWidth: '220px', maxWidth: '360px',
-                padding: '0.5rem 0.875rem', border: '1.5px solid #E5E7EB',
+                padding: '0.5rem 0.875rem', border: `1.5px solid ${theme.borderMed}`,
                 borderRadius: '0.5rem', fontSize: '0.82rem',
-                outline: 'none', backgroundColor: 'white',
+                outline: 'none', backgroundColor: theme.cardBg, color: theme.text,
               }}
               onFocus={e => e.target.style.borderColor = '#CC2027'}
-              onBlur={e => e.target.style.borderColor = '#E5E7EB'}
+              onBlur={e => e.target.style.borderColor = theme.borderMed}
             />
-            <button onClick={loadAllUsers} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 0.85rem', backgroundColor: 'white', border: '1.5px solid #E5E7EB', borderRadius: '0.5rem', fontSize: '0.78rem', color: '#6B7280', cursor: 'pointer' }}>
+            <button onClick={loadAllUsers} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 0.85rem', backgroundColor: theme.cardBg, border: `1.5px solid ${theme.borderMed}`, borderRadius: '0.5rem', fontSize: '0.78rem', color: theme.textSub, cursor: 'pointer' }}>
               <RefreshCw size={13} />{tx.refresh}
             </button>
           </div>
@@ -779,40 +783,40 @@ function Admin() {
           )}
 
           {usersLoading && (
-            <div style={{ textAlign: 'center', padding: '3rem', color: '#9CA3AF' }}>
+            <div style={{ textAlign: 'center', padding: '3rem', color: theme.textMuted }}>
               <p>{tx.loading_users}</p>
             </div>
           )}
 
           {!usersLoading && filteredUsers.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '3rem', backgroundColor: 'white', borderRadius: '0.75rem', border: '1px solid #F0F0F0' }}>
-              <Users size={32} color="#E5E7EB" style={{ marginBottom: '0.75rem' }} />
-              <p style={{ fontWeight: '600', color: '#374151', marginBottom: '0.25rem' }}>{tx.no_users}</p>
-              <p style={{ color: '#9CA3AF', fontSize: '0.875rem' }}>{tx.try_different}</p>
+            <div style={{ textAlign: 'center', padding: '3rem', backgroundColor: theme.cardBg, borderRadius: '0.75rem', border: `1px solid ${theme.border}` }}>
+              <Users size={32} color={theme.borderMed} style={{ marginBottom: '0.75rem' }} />
+              <p style={{ fontWeight: '600', color: theme.textMed, marginBottom: '0.25rem' }}>{tx.no_users}</p>
+              <p style={{ color: theme.textMuted, fontSize: '0.875rem' }}>{tx.try_different}</p>
             </div>
           )}
 
-          <div style={{ backgroundColor: 'white', borderRadius: '0.75rem', border: '1px solid #F0F0F0', overflow: 'hidden' }}>
+          <div style={{ backgroundColor: theme.cardBg, borderRadius: '0.75rem', border: `1px solid ${theme.border}`, overflow: 'hidden' }}>
             {filteredUsers.map((user, i) => (
               <div key={user.id} style={{
                 display: 'flex', alignItems: 'center', gap: '1rem',
                 padding: '1rem 1.25rem',
-                borderBottom: i < filteredUsers.length - 1 ? '1px solid #F9FAFB' : 'none',
+                borderBottom: i < filteredUsers.length - 1 ? `1px solid ${theme.border}` : 'none',
               }}>
                 <Avatar user={user} size={40} />
 
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.2rem' }}>
-                    <p style={{ fontSize: '0.875rem', fontWeight: '600', color: '#111827' }}>{user.name}</p>
+                    <p style={{ fontSize: '0.875rem', fontWeight: '600', color: theme.text }}>{user.name}</p>
                     {user.emailVerified && <span style={{ color: '#3B82F6', fontSize: '0.7rem' }} title="Email verified">✓</span>}
                   </div>
-                  <p style={{ fontSize: '0.78rem', color: '#6B7280' }}>{user.email}</p>
+                  <p style={{ fontSize: '0.78rem', color: theme.textSub }}>{user.email}</p>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
                   <RoleBadge role={user.role} tx={tx} />
                   <StatusBadge user={user} tx={tx} />
-                  <span style={{ fontSize: '0.72rem', color: '#9CA3AF', minWidth: '80px', textAlign: 'right' }}>
+                  <span style={{ fontSize: '0.72rem', color: theme.textMuted, minWidth: '80px', textAlign: 'right' }}>
                     {formatDate(user.createdAt)}
                   </span>
                 </div>
@@ -825,8 +829,8 @@ function Admin() {
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       width: '32px', height: '32px', borderRadius: '0.4rem',
-                      border: '1.5px solid #E5E7EB', backgroundColor: 'white',
-                      color: '#6B7280', cursor: 'pointer',
+                      border: `1.5px solid ${theme.borderMed}`, backgroundColor: theme.cardBg,
+                      color: theme.textSub, cursor: 'pointer',
                     }}
                   >
                     <Eye size={14} />

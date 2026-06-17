@@ -9,6 +9,7 @@ import workplaceService from '../services/workplaceService';
 import taskService from '../services/taskService';
 import useAuthStore from '../store/authStore';
 import { useAutoT, useDynamicTranslation } from '../i18n/LanguageContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 // ── Translatable strings ───────────────────────────────────────────────────────
 
@@ -83,10 +84,11 @@ function Avatar({ name, size = 28 }) {
 }
 
 function ProgressBar({ pct, height = 5 }) {
+  const { theme } = useTheme();
   const color = pct >= 70 ? '#16A34A' : pct >= 35 ? '#D97706' : '#3B82F6';
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-      <div style={{ flex: 1, height, backgroundColor: '#E5E7EB', borderRadius: '9999px', overflow: 'hidden' }}>
+      <div style={{ flex: 1, height, backgroundColor: theme.borderMed, borderRadius: '9999px', overflow: 'hidden' }}>
         <div style={{ height: '100%', width: `${pct}%`, backgroundColor: color, borderRadius: '9999px', transition: 'width 0.4s ease' }} />
       </div>
       <span style={{ fontSize: '0.65rem', fontWeight: '700', color, minWidth: '2.2rem' }}>{pct}%</span>
@@ -97,6 +99,7 @@ function ProgressBar({ pct, height = 5 }) {
 // ── Subtask card ──────────────────────────────────────────────────────────────
 
 function SubtaskCard({ subtask, isManager, onDragStart, tx, txData }) {
+  const { theme } = useTheme();
   const CX_MAP = {
     LOW:    { label: tx.cx_low,    bg: '#F0FDF4', color: '#16A34A', border: '#BBF7D0' },
     MEDIUM: { label: tx.cx_medium, bg: '#FFF7ED', color: '#D97706', border: '#FDE68A' },
@@ -106,15 +109,15 @@ function SubtaskCard({ subtask, isManager, onDragStart, tx, txData }) {
 
   return (
     <div draggable onDragStart={() => onDragStart(subtask.id)}
-      style={{ backgroundColor: 'white', border: '1px solid #E5E7EB', borderRadius: '0.625rem', padding: '0.875rem', cursor: 'grab', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', transition: 'box-shadow 0.15s, transform 0.1s', userSelect: 'none' }}
+      style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.borderMed}`, borderRadius: '0.625rem', padding: '0.875rem', cursor: 'grab', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', transition: 'box-shadow 0.15s, transform 0.1s', userSelect: 'none' }}
       onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
       onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
 
-      <div style={{ display: 'inline-flex', alignItems: 'center', backgroundColor: '#F0F0F5', borderRadius: '4px', padding: '0.1rem 0.5rem', marginBottom: '0.5rem', maxWidth: '100%' }}>
-        <span style={{ fontSize: '0.65rem', color: '#6B7280', fontWeight: '500', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{txData?.[subtask.taskTitle] || subtask.taskTitle}</span>
+      <div style={{ display: 'inline-flex', alignItems: 'center', backgroundColor: theme.tagBg, borderRadius: '4px', padding: '0.1rem 0.5rem', marginBottom: '0.5rem', maxWidth: '100%' }}>
+        <span style={{ fontSize: '0.65rem', color: theme.textSub, fontWeight: '500', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{txData?.[subtask.taskTitle] || subtask.taskTitle}</span>
       </div>
 
-      <p style={{ fontSize: '0.825rem', fontWeight: '600', color: '#111827', lineHeight: '1.4', marginBottom: '0.625rem' }}>{txData?.[subtask.title] || subtask.title}</p>
+      <p style={{ fontSize: '0.825rem', fontWeight: '600', color: theme.text, lineHeight: '1.4', marginBottom: '0.625rem' }}>{txData?.[subtask.title] || subtask.title}</p>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap', marginBottom: '0.625rem' }}>
         {cx && (
@@ -134,13 +137,13 @@ function SubtaskCard({ subtask, isManager, onDragStart, tx, txData }) {
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         {subtask.estimatedHours != null ? (
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.7rem', color: '#9CA3AF' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.7rem', color: theme.textMuted }}>
             <Clock size={11} />{subtask.estimatedHours}h {tx.est}
           </span>
         ) : <span />}
         {isManager && subtask.submittedByName && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-            <span style={{ fontSize: '0.68rem', color: '#9CA3AF' }}>{subtask.submittedByName.split(' ')[0]}</span>
+            <span style={{ fontSize: '0.68rem', color: theme.textMuted }}>{subtask.submittedByName.split(' ')[0]}</span>
             <Avatar name={subtask.submittedByName} size={22} />
           </div>
         )}
@@ -152,6 +155,7 @@ function SubtaskCard({ subtask, isManager, onDragStart, tx, txData }) {
 // ── Task card ─────────────────────────────────────────────────────────────────
 
 function TaskCard({ task, workplace, isManager, isDraggable, onDragStart, tx, txData }) {
+  const { theme } = useTheme();
   const MOSCOW_MAP = {
     MUST:   { label: tx.ms_must,   bg: '#FEF2F2', color: '#DC2626', border: '#FECACA' },
     SHOULD: { label: tx.ms_should, bg: '#FFF7ED', color: '#D97706', border: '#FDE68A' },
@@ -165,20 +169,20 @@ function TaskCard({ task, workplace, isManager, isDraggable, onDragStart, tx, tx
 
   return (
     <div draggable={isDraggable} onDragStart={() => isDraggable && onDragStart(task.id)}
-      style={{ backgroundColor: 'white', border: '1px solid #E5E7EB', borderRadius: '0.625rem', padding: '0.875rem', cursor: isDraggable ? 'grab' : 'default', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', transition: 'box-shadow 0.15s, transform 0.1s', userSelect: 'none', opacity: isDraggable ? 1 : 0.85 }}
+      style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.borderMed}`, borderRadius: '0.625rem', padding: '0.875rem', cursor: isDraggable ? 'grab' : 'default', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', transition: 'box-shadow 0.15s, transform 0.1s', userSelect: 'none', opacity: isDraggable ? 1 : 0.85 }}
       onMouseEnter={e => { if (isDraggable) { e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
       onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
         {task.taskType && (
-          <span style={{ fontSize: '0.62rem', fontWeight: '600', padding: '0.15rem 0.5rem', borderRadius: '9999px', backgroundColor: task.taskTypeColor ? `${task.taskTypeColor}18` : '#F3F4F6', color: task.taskTypeColor || '#6B7280', border: `1px solid ${task.taskTypeColor ? `${task.taskTypeColor}30` : '#E5E7EB'}` }}>{txData?.[task.taskType] || task.taskType}</span>
+          <span style={{ fontSize: '0.62rem', fontWeight: '600', padding: '0.15rem 0.5rem', borderRadius: '9999px', backgroundColor: task.taskTypeColor ? `${task.taskTypeColor}18` : theme.tagBg, color: task.taskTypeColor || theme.textSub, border: `1px solid ${task.taskTypeColor ? `${task.taskTypeColor}30` : theme.borderMed}` }}>{txData?.[task.taskType] || task.taskType}</span>
         )}
         {task.finalScore != null && (
           <span style={{ fontSize: '0.68rem', fontWeight: '800', color: '#CC2027', backgroundColor: '#FEF2F2', border: '1px solid #FECACA', padding: '0.1rem 0.4rem', borderRadius: '4px' }}>{task.finalScore.toFixed(1)}</span>
         )}
       </div>
 
-      <p style={{ fontSize: '0.825rem', fontWeight: '600', color: '#111827', lineHeight: '1.4', marginBottom: '0.5rem' }}>{txData?.[task.title] || task.title}</p>
+      <p style={{ fontSize: '0.825rem', fontWeight: '600', color: theme.text, lineHeight: '1.4', marginBottom: '0.5rem' }}>{txData?.[task.title] || task.title}</p>
 
       {moscow && (
         <div style={{ marginBottom: '0.5rem' }}>
@@ -189,7 +193,7 @@ function TaskCard({ task, workplace, isManager, isDraggable, onDragStart, tx, tx
       {workplace && totalCount > 0 && (
         <div style={{ marginBottom: '0.625rem' }}>
           <ProgressBar pct={pct} />
-          <span style={{ fontSize: '0.65rem', color: '#9CA3AF', marginTop: '0.2rem', display: 'block' }}>
+          <span style={{ fontSize: '0.65rem', color: theme.textMuted, marginTop: '0.2rem', display: 'block' }}>
             {doneCount}/{totalCount} {tx.subtasks_label}
           </span>
         </div>
@@ -197,7 +201,7 @@ function TaskCard({ task, workplace, isManager, isDraggable, onDragStart, tx, tx
 
       {isManager && task.submittedBy && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.35rem', marginTop: '0.25rem' }}>
-          <span style={{ fontSize: '0.68rem', color: '#9CA3AF' }}>{task.submittedBy.split(' ')[0]}</span>
+          <span style={{ fontSize: '0.68rem', color: theme.textMuted }}>{task.submittedBy.split(' ')[0]}</span>
           <Avatar name={task.submittedBy} size={22} />
         </div>
       )}
@@ -208,6 +212,7 @@ function TaskCard({ task, workplace, isManager, isDraggable, onDragStart, tx, tx
 // ── Generic Kanban column ─────────────────────────────────────────────────────
 
 function KanbanColumn({ col, children, cardCount, isDragOver, onDragOver, onDragLeave, onDrop, tx }) {
+  const { theme } = useTheme();
   return (
     <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', backgroundColor: col.bg, border: `1px solid ${isDragOver ? col.color : col.border}`, borderRadius: '0.875rem', overflow: 'hidden', transition: 'border-color 0.15s, box-shadow 0.15s', boxShadow: isDragOver ? `0 0 0 2px ${col.color}30` : 'none' }}>
       <div style={{ padding: '0.875rem 1rem', backgroundColor: col.headerBg, borderBottom: `1px solid ${col.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -215,7 +220,7 @@ function KanbanColumn({ col, children, cardCount, isDragOver, onDragOver, onDrag
           <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: col.dot }} />
           <span style={{ fontSize: '0.8rem', fontWeight: '700', color: '#374151' }}>{col.label}</span>
         </div>
-        <span style={{ fontSize: '0.72rem', fontWeight: '700', backgroundColor: 'white', color: col.color, border: `1px solid ${col.border}`, padding: '0.1rem 0.5rem', borderRadius: '9999px' }}>{cardCount}</span>
+        <span style={{ fontSize: '0.72rem', fontWeight: '700', backgroundColor: theme.cardBg, color: col.color, border: `1px solid ${col.border}`, padding: '0.1rem 0.5rem', borderRadius: '9999px' }}>{cardCount}</span>
       </div>
 
       <div onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}
@@ -236,6 +241,7 @@ function KanbanColumn({ col, children, cardCount, isDragOver, onDragOver, onDrag
 export default function SprintPage() {
   const { user } = useAuthStore();
   const tx = useAutoT(STRINGS);
+  const { theme } = useTheme();
   const isManager = user?.role === 'IT_MANAGER' || user?.role === 'ADMIN';
 
   const SUBTASK_COLS = useMemo(() => buildSubCols(tx), [tx.col_todo, tx.col_in_progress, tx.col_done]);
@@ -345,7 +351,7 @@ export default function SprintPage() {
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: '0.25rem', backgroundColor: '#F3F4F6', borderRadius: '0.625rem', padding: '0.25rem', marginBottom: '1.25rem', width: 'fit-content' }}>
+      <div style={{ display: 'flex', gap: '0.25rem', backgroundColor: theme.tagBg, borderRadius: '0.625rem', padding: '0.25rem', marginBottom: '1.25rem', width: 'fit-content' }}>
         {[
           { key: 'tasks',    icon: Layers,   label: tx.tab_tasks },
           { key: 'subtasks', icon: ListTodo, label: tx.tab_subtasks },
@@ -354,7 +360,7 @@ export default function SprintPage() {
           const active = activeTab === tab.key;
           return (
             <button key={tab.key} onClick={() => { setActiveTab(tab.key); setFilterMember('ALL'); }}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 1rem', borderRadius: '0.4rem', border: 'none', cursor: 'pointer', fontSize: '0.82rem', fontWeight: '600', backgroundColor: active ? 'white' : 'transparent', color: active ? '#111827' : '#6B7280', boxShadow: active ? '0 1px 4px rgba(0,0,0,0.08)' : 'none', transition: 'all 0.15s' }}>
+              style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 1rem', borderRadius: '0.4rem', border: 'none', cursor: 'pointer', fontSize: '0.82rem', fontWeight: '600', backgroundColor: active ? theme.cardBg : 'transparent', color: active ? theme.text : theme.textSub, boxShadow: active ? '0 1px 4px rgba(0,0,0,0.08)' : 'none', transition: 'all 0.15s' }}>
               <Icon size={14} />{tab.label}
             </button>
           );
@@ -367,19 +373,19 @@ export default function SprintPage() {
           {activeTab === 'subtasks' ? (
             <>
               {[
-                { label: tx.stat_total,       value: subTotal,                     color: '#374151' },
+                { label: tx.stat_total,       value: subTotal,                     color: theme.textMed },
                 { label: tx.col_todo,         value: subByStatus('TODO').length,   color: '#6B7280' },
                 { label: tx.col_in_progress,  value: subByStatus('IN_PROGRESS').length, color: '#2563EB' },
                 { label: tx.col_done,         value: subDone,                      color: '#16A34A' },
               ].map(s => (
                 <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                   <span style={{ fontSize: '1.1rem', fontWeight: '800', color: s.color }}>{s.value}</span>
-                  <span style={{ fontSize: '0.72rem', color: '#9CA3AF', fontWeight: '500' }}>{s.label}</span>
+                  <span style={{ fontSize: '0.72rem', color: theme.textMuted, fontWeight: '500' }}>{s.label}</span>
                 </div>
               ))}
               {subTotal > 0 && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <div style={{ width: '100px', height: '6px', backgroundColor: '#E5E7EB', borderRadius: '9999px', overflow: 'hidden' }}>
+                  <div style={{ width: '100px', height: '6px', backgroundColor: theme.borderMed, borderRadius: '9999px', overflow: 'hidden' }}>
                     <div style={{ height: '100%', width: `${subPct}%`, backgroundColor: '#16A34A', borderRadius: '9999px', transition: 'width 0.4s ease' }} />
                   </div>
                   <span style={{ fontSize: '0.72rem', fontWeight: '700', color: '#16A34A' }}>{subPct}%</span>
@@ -389,19 +395,19 @@ export default function SprintPage() {
           ) : (
             <>
               {[
-                { label: tx.stat_total,     value: taskTotal,                   color: '#374151' },
+                { label: tx.stat_total,     value: taskTotal,                   color: theme.textMed },
                 { label: tx.col_backlog,    value: tasksByCol('BACKLOG').length, color: '#6B7280' },
                 { label: tx.stat_active,    value: taskActive,                  color: '#2563EB' },
                 { label: tx.stat_completed, value: taskCompleted,               color: '#16A34A' },
               ].map(s => (
                 <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                   <span style={{ fontSize: '1.1rem', fontWeight: '800', color: s.color }}>{s.value}</span>
-                  <span style={{ fontSize: '0.72rem', color: '#9CA3AF', fontWeight: '500' }}>{s.label}</span>
+                  <span style={{ fontSize: '0.72rem', color: theme.textMuted, fontWeight: '500' }}>{s.label}</span>
                 </div>
               ))}
               {taskTotal > 0 && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <div style={{ width: '100px', height: '6px', backgroundColor: '#E5E7EB', borderRadius: '9999px', overflow: 'hidden' }}>
+                  <div style={{ width: '100px', height: '6px', backgroundColor: theme.borderMed, borderRadius: '9999px', overflow: 'hidden' }}>
                     <div style={{ height: '100%', width: `${taskPct}%`, backgroundColor: '#16A34A', borderRadius: '9999px', transition: 'width 0.4s ease' }} />
                   </div>
                   <span style={{ fontSize: '0.72rem', fontWeight: '700', color: '#16A34A' }}>{taskPct}%</span>
@@ -415,7 +421,7 @@ export default function SprintPage() {
           {isManager && allMemberNames.length > 0 && (
             <div style={{ position: 'relative' }}>
               <select value={filterMember} onChange={e => setFilterMember(e.target.value)}
-                style={{ padding: '0.45rem 2rem 0.45rem 0.75rem', border: '1.5px solid #E5E7EB', borderRadius: '0.5rem', backgroundColor: filterMember !== 'ALL' ? '#EFF6FF' : 'white', color: filterMember !== 'ALL' ? '#2563EB' : '#374151', fontSize: '0.8rem', fontWeight: '500', appearance: 'none', cursor: 'pointer', outline: 'none', borderColor: filterMember !== 'ALL' ? '#93C5FD' : '#E5E7EB' }}>
+                style={{ padding: '0.45rem 2rem 0.45rem 0.75rem', border: `1.5px solid ${theme.borderMed}`, borderRadius: '0.5rem', backgroundColor: filterMember !== 'ALL' ? '#EFF6FF' : theme.cardBg, color: filterMember !== 'ALL' ? '#2563EB' : theme.textMed, fontSize: '0.8rem', fontWeight: '500', appearance: 'none', cursor: 'pointer', outline: 'none', borderColor: filterMember !== 'ALL' ? '#93C5FD' : theme.borderMed }}>
                 <option value="ALL">{tx.all_members}</option>
                 {allMemberNames.map(name => <option key={name} value={name}>{name}</option>)}
               </select>
@@ -423,7 +429,7 @@ export default function SprintPage() {
             </div>
           )}
           <button onClick={handleRefresh} disabled={refreshing}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 0.875rem', borderRadius: '0.5rem', border: '1.5px solid #E5E7EB', backgroundColor: 'white', color: '#6B7280', fontSize: '0.8rem', fontWeight: '500', cursor: refreshing ? 'not-allowed' : 'pointer', opacity: refreshing ? 0.6 : 1 }}>
+            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 0.875rem', borderRadius: '0.5rem', border: `1.5px solid ${theme.borderMed}`, backgroundColor: theme.cardBg, color: theme.textSub, fontSize: '0.8rem', fontWeight: '500', cursor: refreshing ? 'not-allowed' : 'pointer', opacity: refreshing ? 0.6 : 1 }}>
             <RefreshCw size={13} style={refreshing ? { animation: 'spin 1s linear infinite' } : {}} />
             {tx.refresh}
           </button>
@@ -447,10 +453,10 @@ export default function SprintPage() {
       {!loading && activeTab === 'subtasks' && (
         <>
           {subtasks.length === 0 && !error && (
-            <div style={{ textAlign: 'center', padding: '4rem 2rem', backgroundColor: 'white', borderRadius: '0.875rem', border: '1px solid #F0F0F0' }}>
-              <Filter size={36} color="#E5E7EB" style={{ marginBottom: '0.75rem' }} />
-              <p style={{ fontWeight: '700', color: '#374151', marginBottom: '0.35rem' }}>{tx.no_sub_title}</p>
-              <p style={{ color: '#9CA3AF', fontSize: '0.875rem' }}>{tx.no_sub_body}</p>
+            <div style={{ textAlign: 'center', padding: '4rem 2rem', backgroundColor: theme.cardBg, borderRadius: '0.875rem', border: `1px solid ${theme.border}` }}>
+              <Filter size={36} color={theme.borderMed} style={{ marginBottom: '0.75rem' }} />
+              <p style={{ fontWeight: '700', color: theme.textMed, marginBottom: '0.35rem' }}>{tx.no_sub_title}</p>
+              <p style={{ color: theme.textMuted, fontSize: '0.875rem' }}>{tx.no_sub_body}</p>
             </div>
           )}
           {subtasks.length > 0 && (
@@ -474,15 +480,15 @@ export default function SprintPage() {
       {!loading && activeTab === 'tasks' && (
         <>
           {tasks.length === 0 && !error && (
-            <div style={{ textAlign: 'center', padding: '4rem 2rem', backgroundColor: 'white', borderRadius: '0.875rem', border: '1px solid #F0F0F0' }}>
-              <Filter size={36} color="#E5E7EB" style={{ marginBottom: '0.75rem' }} />
-              <p style={{ fontWeight: '700', color: '#374151', marginBottom: '0.35rem' }}>{tx.no_task_title}</p>
-              <p style={{ color: '#9CA3AF', fontSize: '0.875rem' }}>{tx.no_task_body}</p>
+            <div style={{ textAlign: 'center', padding: '4rem 2rem', backgroundColor: theme.cardBg, borderRadius: '0.875rem', border: `1px solid ${theme.border}` }}>
+              <Filter size={36} color={theme.borderMed} style={{ marginBottom: '0.75rem' }} />
+              <p style={{ fontWeight: '700', color: theme.textMed, marginBottom: '0.35rem' }}>{tx.no_task_title}</p>
+              <p style={{ color: theme.textMuted, fontSize: '0.875rem' }}>{tx.no_task_body}</p>
             </div>
           )}
           {tasks.length > 0 && (
             <>
-              <p style={{ fontSize: '0.75rem', color: '#9CA3AF', marginBottom: '0.75rem' }}>{tx.drag_hint}</p>
+              <p style={{ fontSize: '0.75rem', color: theme.textMuted, marginBottom: '0.75rem' }}>{tx.drag_hint}</p>
               <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', minHeight: '60vh' }}>
                 {TASK_COLS.map(col => (
                   <KanbanColumn key={col.key} col={col} cardCount={tasksByCol(col.key).length} isDragOver={dragOverTask === col.key && col.droppable !== false} tx={tx}

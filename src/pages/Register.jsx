@@ -105,8 +105,7 @@ function Register() {
     setIsLoading(true);
     try {
       await authService.register({ name: formData.name, email: formData.email, password: formData.password, role: formData.role }, photo);
-      setSuccess(tx.success);
-      setTimeout(() => navigate('/login'), 4000);
+      navigate(`/verify-email?email=${encodeURIComponent(formData.email)}`);
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {

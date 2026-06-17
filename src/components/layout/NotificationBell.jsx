@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bell, Brain, ShieldAlert, CheckCheck, X, Clock } from 'lucide-react';
+import { Bell, Brain, ShieldAlert, CheckCheck, X, Clock, UserPlus, Link2 } from 'lucide-react';
 import notificationService from '../../services/notificationService';
 import wsService from '../../services/websocketService';
 
@@ -7,6 +7,8 @@ const TYPE_META = {
   TASK_SCORED:      { icon: Brain,       color: '#7C3AED', bg: '#F5F3FF' },
   OVERRIDE_APPLIED: { icon: ShieldAlert, color: '#D97706', bg: '#FFF7ED' },
   DEADLINE_ALERT:   { icon: Clock,       color: '#CC2027', bg: '#FFF1F2' },
+  NEW_USER_PENDING: { icon: UserPlus,    color: '#1A1A2E', bg: '#EFF6FF' },
+  TASK_LINKED:      { icon: Link2,       color: '#7C3AED', bg: '#F5F3FF' },
 };
 
 function timeAgo(iso) {

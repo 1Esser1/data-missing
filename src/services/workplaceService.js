@@ -36,6 +36,16 @@ const workplaceService = {
     const res = await api.put(`/api/workplace/subtask/${subtaskId}/status`, { status });
     return res.data;
   },
+
+  getUnified: async (workplaceId) => {
+    const res = await api.get(`/api/workplace/${workplaceId}/unified`);
+    return res.data;
+  },
+
+  merge: async (workplaceId) => {
+    const res = await api.post(`/api/workplace/${workplaceId}/merge`);
+    return res.data;
+  },
 };
 
 export default workplaceService;

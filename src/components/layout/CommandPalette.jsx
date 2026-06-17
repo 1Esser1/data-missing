@@ -55,7 +55,7 @@ export default function CommandPalette() {
   const navigate  = useNavigate();
   const { isAuthenticated, user } = useAuthStore();
 
-  // Ctrl+K / Cmd+K toggle
+  // Ctrl+K / Cmd+K toggle + Escape
   useEffect(() => {
     function onKey(e) {
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
@@ -67,6 +67,22 @@ export default function CommandPalette() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
+
+  // N → open new task form (re-registers when palette opens/closes to avoid stale closure)
+  useEffect(() => {
+    function onNewTask(e) {
+      if (open) return;
+      if (e.key !== 'n') return;
+      if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+      const tag = document.activeElement?.tagName?.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+      if (document.activeElement?.contentEditable === 'true') return;
+      e.preventDefault();
+      navigate('/tasks', { state: { autoFocus: true } });
+    }
+    window.addEventListener('keydown', onNewTask);
+    return () => window.removeEventListener('keydown', onNewTask);
+  }, [open, navigate]);
 
   // On open: focus input + fetch tasks once
   useEffect(() => {
@@ -267,6 +283,7 @@ export default function CommandPalette() {
           <span><kbd style={KBD}>↑↓</kbd>navigate</span>
           <span><kbd style={KBD}>↵</kbd>select</span>
           <span><kbd style={KBD}>Esc</kbd>close</span>
+          <span style={{ marginLeft: 'auto' }}><kbd style={KBD}>N</kbd>new task</span>
         </div>
       </div>
     </div>

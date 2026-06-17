@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import {
   Activity, GitCommit, AlertTriangle, Clock, RefreshCw,
-  GitBranch, Link2, TrendingUp, Users, ChevronDown, ChevronUp, ExternalLink
+  GitBranch, Link2, TrendingUp, Users, ChevronDown, ChevronUp, ExternalLink,
+  GitMerge, Zap, CheckCircle2
 } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
 import doraService from '../services/doraService';
 import useAuthStore from '../store/authStore';
 import { useAutoT } from '../i18n/LanguageContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 const STRINGS = {
   title:            'DORA Metrics',
@@ -101,6 +103,7 @@ function RatingBadge({ rating, tx }) {
 
 // ── Bar chart (CSS-only) ───────────────────────────────────────────────────────
 function WeeklyChart({ data, tx }) {
+  const { theme } = useTheme();
   if (!data || data.length === 0) return null;
 
   const maxDeploy = Math.max(...data.map(d => d.deploymentsCount), 1);
@@ -110,13 +113,13 @@ function WeeklyChart({ data, tx }) {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-        <span style={{ fontSize: '0.7rem', color: '#6B7280', fontWeight: '600' }}>{tx.weekly_activity || 'WEEKLY ACTIVITY'}</span>
+        <span style={{ fontSize: '0.7rem', color: theme.textSub, fontWeight: '600' }}>{tx.weekly_activity || 'WEEKLY ACTIVITY'}</span>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.68rem', color: '#6B7280' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.68rem', color: theme.textSub }}>
             <span style={{ width: '8px', height: '8px', borderRadius: '2px', backgroundColor: '#CC2027', display: 'inline-block' }} />
             {tx.deployments || 'Deployments'}
           </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.68rem', color: '#6B7280' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.68rem', color: theme.textSub }}>
             <span style={{ width: '8px', height: '8px', borderRadius: '2px', backgroundColor: '#1A1A2E', display: 'inline-block' }} />
             {tx.completed || 'Completed'}
           </span>
@@ -137,7 +140,7 @@ function WeeklyChart({ data, tx }) {
                 backgroundColor: '#1A1A2E', minHeight: week.subtasksCompleted > 0 ? '4px' : '0',
               }} title={`${week.subtasksCompleted} completed`} />
             </div>
-            <span style={{ fontSize: '0.58rem', color: '#9CA3AF' }}>{week.weekLabel}</span>
+            <span style={{ fontSize: '0.58rem', color: theme.textMuted }}>{week.weekLabel}</span>
           </div>
         ))}
       </div>
@@ -147,9 +150,10 @@ function WeeklyChart({ data, tx }) {
 
 // ── Single metric card ─────────────────────────────────────────────────────────
 function MetricCard({ icon: Icon, iconColor, title, value, unit, rating, sub, note, tx }) {
+  const { theme } = useTheme();
   return (
     <div style={{
-      backgroundColor: 'white', border: '1px solid #F0F0F0', borderRadius: '0.875rem',
+      backgroundColor: theme.cardBg, border: `1px solid ${theme.border}`, borderRadius: '0.875rem',
       padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -161,7 +165,7 @@ function MetricCard({ icon: Icon, iconColor, title, value, unit, rating, sub, no
           }}>
             <Icon size={16} color={iconColor} />
           </div>
-          <span style={{ fontSize: '0.78rem', fontWeight: '600', color: '#374151' }}>{title}</span>
+          <span style={{ fontSize: '0.78rem', fontWeight: '600', color: theme.textMed }}>{title}</span>
         </div>
         <RatingBadge rating={rating} tx={tx} />
       </div>
@@ -169,19 +173,19 @@ function MetricCard({ icon: Icon, iconColor, title, value, unit, rating, sub, no
       <div>
         {value !== null && value !== undefined ? (
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.3rem' }}>
-            <span style={{ fontSize: '1.75rem', fontWeight: '800', color: '#111827', lineHeight: 1 }}>
+            <span style={{ fontSize: '1.75rem', fontWeight: '800', color: theme.text, lineHeight: 1 }}>
               {value}
             </span>
-            {unit && <span style={{ fontSize: '0.8rem', color: '#6B7280', fontWeight: '500' }}>{unit}</span>}
+            {unit && <span style={{ fontSize: '0.8rem', color: theme.textSub, fontWeight: '500' }}>{unit}</span>}
           </div>
         ) : (
-          <span style={{ fontSize: '1rem', color: '#9CA3AF', fontStyle: 'italic' }}>{tx.no_data_yet || 'No data yet'}</span>
+          <span style={{ fontSize: '1rem', color: theme.textMuted, fontStyle: 'italic' }}>{tx.no_data_yet || 'No data yet'}</span>
         )}
-        {sub && <p style={{ fontSize: '0.72rem', color: '#6B7280', marginTop: '0.2rem' }}>{sub}</p>}
+        {sub && <p style={{ fontSize: '0.72rem', color: theme.textSub, marginTop: '0.2rem' }}>{sub}</p>}
       </div>
 
       {note && (
-        <p style={{ fontSize: '0.7rem', color: '#9CA3AF', borderTop: '1px solid #F9FAFB', paddingTop: '0.5rem' }}>
+        <p style={{ fontSize: '0.7rem', color: theme.textMuted, borderTop: `1px solid ${theme.border}`, paddingTop: '0.5rem' }}>
           {note}
         </p>
       )}
@@ -191,6 +195,7 @@ function MetricCard({ icon: Icon, iconColor, title, value, unit, rating, sub, no
 
 // ── Stats strip ───────────────────────────────────────────────────────────────
 function StatsStrip({ metrics, tx }) {
+  const { theme } = useTheme();
   const stats = [
     { label: tx.ss_total || 'Subtasks Total',         value: metrics.totalSubtasks ?? 0 },
     { label: tx.ss_completed || 'Completed',           value: metrics.completedSubtasks ?? 0 },
@@ -202,16 +207,16 @@ function StatsStrip({ metrics, tx }) {
   return (
     <div style={{
       display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)',
-      backgroundColor: 'white', border: '1px solid #F0F0F0',
+      backgroundColor: theme.cardBg, border: `1px solid ${theme.border}`,
       borderRadius: '0.875rem', overflow: 'hidden',
     }}>
       {stats.map((s, i) => (
         <div key={i} style={{
           padding: '1rem', textAlign: 'center',
-          borderRight: i < stats.length - 1 ? '1px solid #F0F0F0' : 'none',
+          borderRight: i < stats.length - 1 ? `1px solid ${theme.border}` : 'none',
         }}>
-          <div style={{ fontSize: '1.3rem', fontWeight: '800', color: '#111827' }}>{s.value}</div>
-          <div style={{ fontSize: '0.65rem', color: '#9CA3AF', fontWeight: '500', marginTop: '0.15rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s.label}</div>
+          <div style={{ fontSize: '1.3rem', fontWeight: '800', color: theme.text }}>{s.value}</div>
+          <div style={{ fontSize: '0.65rem', color: theme.textMuted, fontWeight: '500', marginTop: '0.15rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s.label}</div>
         </div>
       ))}
     </div>
@@ -246,6 +251,7 @@ function ConnectionBadges({ metrics, tx }) {
 
 // ── Personal metrics panel ────────────────────────────────────────────────────
 function PersonalPanel({ metrics, tx }) {
+  const { theme } = useTheme();
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       <ConnectionBadges metrics={metrics} tx={tx} />
@@ -298,7 +304,7 @@ function PersonalPanel({ metrics, tx }) {
       <StatsStrip metrics={metrics} tx={tx} />
 
       <div style={{
-        backgroundColor: 'white', border: '1px solid #F0F0F0',
+        backgroundColor: theme.cardBg, border: `1px solid ${theme.border}`,
         borderRadius: '0.875rem', padding: '1.25rem',
       }}>
         <WeeklyChart data={metrics.weeklyActivity} tx={tx} />
@@ -309,6 +315,7 @@ function PersonalPanel({ metrics, tx }) {
 
 // ── Team member row (manager view) ────────────────────────────────────────────
 function MemberRow({ member, onExpand, expanded, tx }) {
+  const { theme } = useTheme();
   const ratings = [
     { label: tx.mr_lead_time || 'Lead Time',     rating: member.leadTimeRating },
     { label: tx.mr_deploy_freq || 'Deploy Freq', rating: member.deploymentFreqRating },
@@ -317,7 +324,7 @@ function MemberRow({ member, onExpand, expanded, tx }) {
   ];
 
   return (
-    <div style={{ backgroundColor: 'white', border: '1px solid #F0F0F0', borderRadius: '0.75rem', overflow: 'hidden' }}>
+    <div style={{ backgroundColor: theme.cardBg, border: `1px solid ${theme.border}`, borderRadius: '0.75rem', overflow: 'hidden' }}>
       <div
         onClick={() => onExpand(member.userId)}
         style={{
@@ -335,28 +342,28 @@ function MemberRow({ member, onExpand, expanded, tx }) {
             {member.userName?.charAt(0)?.toUpperCase() ?? '?'}
           </div>
           <div>
-            <div style={{ fontSize: '0.85rem', fontWeight: '600', color: '#111827' }}>{member.userName}</div>
-            <div style={{ fontSize: '0.7rem', color: '#9CA3AF' }}>{getRoleLabel(member.userRole, tx)}</div>
+            <div style={{ fontSize: '0.85rem', fontWeight: '600', color: theme.text }}>{member.userName}</div>
+            <div style={{ fontSize: '0.7rem', color: theme.textMuted }}>{getRoleLabel(member.userRole, tx)}</div>
           </div>
         </div>
 
         {/* 4 rating badges */}
         {ratings.map(r => (
           <div key={r.label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem' }}>
-            <span style={{ fontSize: '0.6rem', color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{r.label}</span>
+            <span style={{ fontSize: '0.6rem', color: theme.textMuted, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{r.label}</span>
             <RatingBadge rating={r.rating} tx={tx} />
           </div>
         ))}
 
         {/* Expand toggle */}
-        <div style={{ color: '#9CA3AF', display: 'flex', alignItems: 'center' }}>
+        <div style={{ color: theme.textMuted, display: 'flex', alignItems: 'center' }}>
           {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </div>
       </div>
 
       {/* Expanded detail */}
       {expanded && (
-        <div style={{ borderTop: '1px solid #F0F0F0', padding: '1.25rem', backgroundColor: '#FAFAFA' }}>
+        <div style={{ borderTop: `1px solid ${theme.border}`, padding: '1.25rem', backgroundColor: theme.hoverBg }}>
           <PersonalPanel metrics={member} tx={tx} />
         </div>
       )}
@@ -366,6 +373,7 @@ function MemberRow({ member, onExpand, expanded, tx }) {
 
 // ── Department aggregate cards ────────────────────────────────────────────────
 function DepartmentAggregate({ agg, tx }) {
+  const { theme } = useTheme();
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
@@ -406,7 +414,7 @@ function DepartmentAggregate({ agg, tx }) {
       <StatsStrip metrics={agg} tx={tx} />
 
       <div style={{
-        backgroundColor: 'white', border: '1px solid #F0F0F0',
+        backgroundColor: theme.cardBg, border: `1px solid ${theme.border}`,
         borderRadius: '0.875rem', padding: '1.25rem',
       }}>
         <WeeklyChart data={agg.weeklyActivity} tx={tx} />
@@ -420,6 +428,7 @@ export default function DoraPage() {
   const { user } = useAuthStore();
   const isManager = user?.role === 'IT_MANAGER' || user?.role === 'ADMIN';
   const tx = useAutoT(STRINGS);
+  const { theme } = useTheme();
 
   const [tab, setTab] = useState('personal');
   const [myMetrics, setMyMetrics] = useState(null);
@@ -429,6 +438,10 @@ export default function DoraPage() {
   const [error, setError] = useState('');
   const [expandedMember, setExpandedMember] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState(null); // { newEvents, message }
+  const [deploymentEvents, setDeploymentEvents] = useState([]);
+  const [eventsExpanded, setEventsExpanded] = useState(false);
 
   const loadPersonal = async () => {
     try {
@@ -454,9 +467,16 @@ export default function DoraPage() {
     }
   };
 
+  const loadEvents = async () => {
+    try {
+      const data = await doraService.getMyDeploymentEvents();
+      setDeploymentEvents(data || []);
+    } catch (_) {}
+  };
+
   useEffect(() => {
     setLoading(true);
-    loadPersonal().finally(() => setLoading(false));
+    Promise.all([loadPersonal(), loadEvents()]).finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
@@ -465,9 +485,24 @@ export default function DoraPage() {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await loadPersonal();
+    await Promise.all([loadPersonal(), loadEvents()]);
     if (tab === 'department') await loadDepartment();
     setRefreshing(false);
+  };
+
+  const handleSync = async () => {
+    setSyncing(true);
+    setSyncResult(null);
+    try {
+      const result = await doraService.syncMe();
+      setSyncResult(result);
+      // Reload metrics and events so counts update immediately
+      await Promise.all([loadPersonal(), loadEvents()]);
+    } catch (e) {
+      setSyncResult({ message: e?.response?.data?.message || 'Sync failed' });
+    } finally {
+      setSyncing(false);
+    }
   };
 
   const toggleMember = (id) => setExpandedMember(prev => prev === id ? null : id);
@@ -493,7 +528,7 @@ export default function DoraPage() {
         {/* Tabs (manager only) */}
         {isManager ? (
           <div style={{
-            display: 'flex', backgroundColor: '#F8F9FB',
+            display: 'flex', backgroundColor: theme.hoverBg,
             borderRadius: '0.625rem', padding: '0.25rem', gap: '0.25rem',
           }}>
             {[
@@ -504,8 +539,8 @@ export default function DoraPage() {
                 display: 'flex', alignItems: 'center', gap: '0.4rem',
                 padding: '0.5rem 1rem', borderRadius: '0.375rem',
                 border: 'none', cursor: 'pointer', fontSize: '0.82rem', fontWeight: '600',
-                backgroundColor: tab === key ? 'white' : 'transparent',
-                color: tab === key ? '#111827' : '#6B7280',
+                backgroundColor: tab === key ? theme.cardBg : 'transparent',
+                color: tab === key ? theme.text : theme.textSub,
                 boxShadow: tab === key ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
                 transition: 'all 0.15s',
               }}>
@@ -516,21 +551,36 @@ export default function DoraPage() {
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <TrendingUp size={18} color="#CC2027" />
-            <span style={{ fontSize: '1rem', fontWeight: '700', color: '#111827' }}>{tx.my_perf || 'My Performance'}</span>
+            <span style={{ fontSize: '1rem', fontWeight: '700', color: theme.text }}>{tx.my_perf || 'My Performance'}</span>
           </div>
         )}
 
-        {/* Refresh button */}
-        <button onClick={handleRefresh} disabled={refreshing} style={{
-          display: 'flex', alignItems: 'center', gap: '0.4rem',
-          padding: '0.5rem 1rem', borderRadius: '0.5rem',
-          border: '1.5px solid #E5E7EB', backgroundColor: 'white',
-          color: '#6B7280', fontSize: '0.8rem', fontWeight: '500',
-          cursor: refreshing ? 'not-allowed' : 'pointer', opacity: refreshing ? 0.6 : 1,
-        }}>
-          <RefreshCw size={13} style={refreshing ? { animation: 'spin 1s linear infinite' } : {}} />
-          {tx.refresh || 'Refresh'}
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          {/* Sync from Git button */}
+          <button onClick={handleSync} disabled={syncing || refreshing} style={{
+            display: 'flex', alignItems: 'center', gap: '0.4rem',
+            padding: '0.5rem 1rem', borderRadius: '0.5rem',
+            border: '1.5px solid #CC2027', backgroundColor: syncing ? '#FEF2F2' : theme.cardBg,
+            color: '#CC2027', fontSize: '0.8rem', fontWeight: '600',
+            cursor: (syncing || refreshing) ? 'not-allowed' : 'pointer',
+            opacity: (syncing || refreshing) ? 0.7 : 1,
+          }}>
+            <GitMerge size={13} style={syncing ? { animation: 'spin 1s linear infinite' } : {}} />
+            {syncing ? 'Syncing…' : 'Sync from Git'}
+          </button>
+
+          {/* Refresh button */}
+          <button onClick={handleRefresh} disabled={refreshing} style={{
+            display: 'flex', alignItems: 'center', gap: '0.4rem',
+            padding: '0.5rem 1rem', borderRadius: '0.5rem',
+            border: `1.5px solid ${theme.borderMed}`, backgroundColor: theme.cardBg,
+            color: theme.textSub, fontSize: '0.8rem', fontWeight: '500',
+            cursor: refreshing ? 'not-allowed' : 'pointer', opacity: refreshing ? 0.6 : 1,
+          }}>
+            <RefreshCw size={13} style={refreshing ? { animation: 'spin 1s linear infinite' } : {}} />
+            {tx.refresh || 'Refresh'}
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -542,8 +592,110 @@ export default function DoraPage() {
         </div>
       )}
 
+      {/* Sync result toast */}
+      {syncResult && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '0.6rem',
+          padding: '0.7rem 1rem', marginBottom: '1rem', borderRadius: '0.5rem',
+          backgroundColor: syncResult.newEvents > 0 ? '#F0FDF4' : '#F9FAFB',
+          border: `1px solid ${syncResult.newEvents > 0 ? '#BBF7D0' : '#E5E7EB'}`,
+        }}>
+          <CheckCircle2 size={15} color={syncResult.newEvents > 0 ? '#16A34A' : '#9CA3AF'} />
+          <span style={{ fontSize: '0.82rem', color: syncResult.newEvents > 0 ? '#15803D' : '#6B7280' }}>
+            {syncResult.message}
+          </span>
+          <button onClick={() => setSyncResult(null)} style={{
+            marginLeft: 'auto', background: 'none', border: 'none',
+            cursor: 'pointer', color: '#9CA3AF', fontSize: '1rem', lineHeight: 1,
+          }}>×</button>
+        </div>
+      )}
+
       {/* Personal tab */}
       {tab === 'personal' && myMetrics && <PersonalPanel metrics={myMetrics} tx={tx} />}
+
+      {/* Git Deployment Events panel (personal tab only) */}
+      {tab === 'personal' && (
+        <div style={{
+          marginTop: '1.25rem', backgroundColor: theme.cardBg,
+          border: `1px solid ${theme.border}`, borderRadius: '0.875rem', overflow: 'hidden',
+        }}>
+          <button
+            onClick={() => setEventsExpanded(v => !v)}
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', gap: '0.6rem',
+              padding: '0.9rem 1.25rem', border: 'none', background: 'none',
+              cursor: 'pointer', textAlign: 'left',
+            }}
+          >
+            <GitMerge size={15} color="#CC2027" />
+            <span style={{ fontWeight: '700', fontSize: '0.85rem', color: theme.text, flex: 1 }}>
+              Git Deployment Events
+            </span>
+            {myMetrics?.gitSynced && (
+              <span style={{
+                fontSize: '0.65rem', fontWeight: '700', padding: '0.15rem 0.5rem',
+                borderRadius: '9999px', backgroundColor: '#F0FDF4',
+                border: '1px solid #BBF7D0', color: '#16A34A',
+              }}>
+                Auto-synced
+              </span>
+            )}
+            <span style={{ fontSize: '0.75rem', color: theme.textMuted, marginRight: '0.25rem' }}>
+              {deploymentEvents.length} event{deploymentEvents.length !== 1 ? 's' : ''} (90d)
+            </span>
+            {eventsExpanded ? <ChevronUp size={14} color={theme.textMuted} /> : <ChevronDown size={14} color={theme.textMuted} />}
+          </button>
+
+          {eventsExpanded && (
+            deploymentEvents.length === 0 ? (
+              <div style={{ padding: '2rem', textAlign: 'center', color: theme.textMuted, fontSize: '0.82rem', borderTop: `1px solid ${theme.border}` }}>
+                No deployment events yet. Click <strong>Sync from Git</strong> to import merged PRs and deployments from your linked repositories.
+              </div>
+            ) : (
+              <div style={{ borderTop: `1px solid ${theme.border}`, maxHeight: '340px', overflowY: 'auto' }}>
+                {deploymentEvents.map(ev => (
+                  <div key={ev.id} style={{
+                    display: 'flex', alignItems: 'center', gap: '0.75rem',
+                    padding: '0.65rem 1.25rem', borderBottom: `1px solid ${theme.border}`,
+                  }}>
+                    <GitCommit size={13} color="#CC2027" style={{ flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{
+                        fontSize: '0.8rem', fontWeight: '500', color: theme.text,
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}>
+                        {ev.prTitle || ev.commitMessage || '—'}
+                      </p>
+                      <p style={{ fontSize: '0.7rem', color: theme.textMuted, marginTop: '0.1rem' }}>
+                        {ev.repo} · {ev.branch || '—'} · {ev.commitSha}
+                        {ev.taskTitle && <> · <span style={{ color: theme.textSub }}>{ev.taskTitle}</span></>}
+                      </p>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.2rem', flexShrink: 0 }}>
+                      <span style={{
+                        fontSize: '0.62rem', fontWeight: '700', padding: '0.1rem 0.4rem',
+                        borderRadius: '9999px', backgroundColor: '#EFF6FF',
+                        border: '1px solid #BFDBFE', color: '#2563EB', textTransform: 'uppercase',
+                      }}>
+                        {ev.environment || 'prod'}
+                      </span>
+                      <span style={{ fontSize: '0.68rem', color: theme.textMuted }}>
+                        {ev.deployedAt ? new Date(ev.deployedAt).toLocaleDateString() : '—'}
+                      </span>
+                    </div>
+                    {ev.prUrl && (
+                      <a href={ev.prUrl} target="_blank" rel="noreferrer" style={{ color: theme.textMuted, flexShrink: 0 }}>
+                        <ExternalLink size={12} />
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )
+          )}
+        </div>
+      )}
 
       {/* Department tab (manager only) */}
       {tab === 'department' && isManager && (
@@ -558,7 +710,7 @@ export default function DoraPage() {
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
                   <Users size={15} color="#CC2027" />
-                  <span style={{ fontSize: '0.82rem', fontWeight: '700', color: '#111827', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <span style={{ fontSize: '0.82rem', fontWeight: '700', color: theme.text, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     {tx.dept_avg || 'Department Average'} — {deptData.totalMembers} members
                   </span>
                 </div>
@@ -569,7 +721,7 @@ export default function DoraPage() {
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
                   <TrendingUp size={15} color="#CC2027" />
-                  <span style={{ fontSize: '0.82rem', fontWeight: '700', color: '#111827', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <span style={{ fontSize: '0.82rem', fontWeight: '700', color: theme.text, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     {tx.team_members || 'Team Members'}
                   </span>
                 </div>
@@ -579,9 +731,9 @@ export default function DoraPage() {
                   display: 'grid', gridTemplateColumns: '2fr repeat(4, 1fr) auto',
                   padding: '0.5rem 1.25rem', gap: '1rem', marginBottom: '0.5rem',
                 }}>
-                  <span style={{ fontSize: '0.68rem', fontWeight: '600', color: '#9CA3AF', textTransform: 'uppercase' }}>{tx.col_member || 'Member'}</span>
+                  <span style={{ fontSize: '0.68rem', fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase' }}>{tx.col_member || 'Member'}</span>
                   {[tx.mr_lead_time || 'Lead Time', tx.mr_deploy_freq || 'Deploy Freq', tx.mr_cfr || 'CFR', tx.mr_mttr || 'MTTR'].map(h => (
-                    <span key={h} style={{ fontSize: '0.68rem', fontWeight: '600', color: '#9CA3AF', textTransform: 'uppercase', textAlign: 'center' }}>{h}</span>
+                    <span key={h} style={{ fontSize: '0.68rem', fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase', textAlign: 'center' }}>{h}</span>
                   ))}
                   <span />
                 </div>

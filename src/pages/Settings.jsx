@@ -7,6 +7,7 @@ import adminService from '../services/adminService';
 import gitService from '../services/gitService';
 import jiraService from '../services/jiraService';
 import { useAutoT } from '../i18n/LanguageContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 const STRINGS = {
   page_title:      'Settings',
@@ -164,18 +165,10 @@ const MOSCOW_MULTIPLIERS = [
 
 /* ─── shared styles ─── */
 
-const inputStyle = {
+const BASE_INPUT_STYLE = {
   width: '100%', padding: '0.65rem 1rem',
-  border: '1.5px solid #E5E7EB', borderRadius: '0.5rem',
-  fontSize: '0.875rem', outline: 'none',
-  boxSizing: 'border-box', backgroundColor: '#FAFAFA',
-  color: '#111827', fontFamily: 'Inter, sans-serif',
-};
-
-const labelStyle = {
-  display: 'block', fontSize: '0.75rem', fontWeight: '600',
-  color: '#374151', marginBottom: '0.4rem',
-  textTransform: 'uppercase', letterSpacing: '0.05em',
+  borderRadius: '0.5rem', fontSize: '0.875rem', outline: 'none',
+  boxSizing: 'border-box', fontFamily: 'Inter, sans-serif',
 };
 
 /* ─── Toggle ─── */
@@ -201,6 +194,9 @@ function Toggle({ checked, onChange }) {
 
 /* ─── Password Confirm Modal ─── */
 function ConfirmPasswordModal({ message, onConfirm, onClose, tx }) {
+  const { theme } = useTheme();
+  const inputStyle = { ...BASE_INPUT_STYLE, border: `1.5px solid ${theme.borderMed}`, backgroundColor: theme.inputBg, color: theme.text };
+  const labelStyle = { display: 'block', fontSize: '0.75rem', fontWeight: '600', color: theme.textMed, marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' };
   const [password, setPassword] = useState('');
   const [show, setShow] = useState(false);
   const [error, setError] = useState('');
@@ -225,12 +221,12 @@ function ConfirmPasswordModal({ message, onConfirm, onClose, tx }) {
       zIndex: 2000, padding: '1rem',
     }}>
       <div style={{
-        backgroundColor: 'white', borderRadius: '1rem',
+        backgroundColor: theme.cardBg, borderRadius: '1rem',
         width: '100%', maxWidth: '380px',
         boxShadow: '0 20px 60px rgba(0,0,0,0.2)', overflow: 'hidden',
       }}>
         <div style={{
-          padding: '1.25rem 1.5rem', borderBottom: '1px solid #F0F0F0',
+          padding: '1.25rem 1.5rem', borderBottom: `1px solid ${theme.border}`,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
@@ -241,17 +237,17 @@ function ConfirmPasswordModal({ message, onConfirm, onClose, tx }) {
             }}>
               <Lock size={15} color="#DC2626" />
             </div>
-            <p style={{ fontSize: '0.9rem', fontWeight: '700', color: '#111827' }}>
+            <p style={{ fontSize: '0.9rem', fontWeight: '700', color: theme.text }}>
               {tx?.confirm_pw || 'Confirm with password'}
             </p>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF' }}>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.textMuted }}>
             <X size={18} />
           </button>
         </div>
 
         <div style={{ padding: '1.25rem 1.5rem' }}>
-          <p style={{ fontSize: '0.82rem', color: '#6B7280', marginBottom: '1rem', lineHeight: '1.5' }}>
+          <p style={{ fontSize: '0.82rem', color: theme.textSub, marginBottom: '1rem', lineHeight: '1.5' }}>
             {message}
           </p>
           <label style={labelStyle}>{tx?.current_pw || 'Current password'}</label>
@@ -264,13 +260,13 @@ function ConfirmPasswordModal({ message, onConfirm, onClose, tx }) {
               placeholder="••••••••"
               style={{ ...inputStyle, paddingRight: '2.5rem' }}
               onFocus={e => e.target.style.borderColor = '#CC2027'}
-              onBlur={e => e.target.style.borderColor = '#E5E7EB'}
+              onBlur={e => e.target.style.borderColor = theme.borderMed}
               autoFocus
             />
             <button type="button" onClick={() => setShow(!show)} style={{
               position: 'absolute', right: '0.75rem', top: '50%',
               transform: 'translateY(-50%)', background: 'none',
-              border: 'none', cursor: 'pointer', color: '#9CA3AF',
+              border: 'none', cursor: 'pointer', color: theme.textMuted,
             }}>
               {show ? <EyeOff size={14} /> : <Eye size={14} />}
             </button>
@@ -281,13 +277,13 @@ function ConfirmPasswordModal({ message, onConfirm, onClose, tx }) {
         </div>
 
         <div style={{
-          padding: '1rem 1.5rem', borderTop: '1px solid #F0F0F0',
+          padding: '1rem 1.5rem', borderTop: `1px solid ${theme.border}`,
           display: 'flex', justifyContent: 'flex-end', gap: '0.5rem',
         }}>
           <button onClick={onClose} style={{
-            padding: '0.5rem 1.1rem', backgroundColor: 'white',
-            border: '1.5px solid #E5E7EB', borderRadius: '0.5rem',
-            fontSize: '0.82rem', fontWeight: '600', color: '#6B7280', cursor: 'pointer',
+            padding: '0.5rem 1.1rem', backgroundColor: theme.cardBg,
+            border: `1.5px solid ${theme.borderMed}`, borderRadius: '0.5rem',
+            fontSize: '0.82rem', fontWeight: '600', color: theme.textSub, cursor: 'pointer',
           }}>
             {tx?.cancel || 'Cancel'}
           </button>
@@ -309,8 +305,11 @@ function ConfirmPasswordModal({ message, onConfirm, onClose, tx }) {
 /* ─── Main Settings Page ─── */
 function Settings() {
   const tx = useAutoT(STRINGS);
+  const { theme } = useTheme();
   const { user, updateUser } = useAuthStore();
   const isAdmin = user?.role === 'ADMIN';
+  const inputStyle = { ...BASE_INPUT_STYLE, border: `1.5px solid ${theme.borderMed}`, backgroundColor: theme.inputBg, color: theme.text };
+  const labelStyle = { display: 'block', fontSize: '0.75rem', fontWeight: '600', color: theme.textMed, marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' };
   const isManager = user?.role === 'IT_MANAGER' || isAdmin;
   const SECTIONS = getSections(tx);
 
@@ -594,8 +593,8 @@ function Settings() {
 
         {/* Left nav */}
         <div style={{
-          backgroundColor: 'white', borderRadius: '0.75rem',
-          border: '1px solid #F0F0F0', padding: '0.75rem',
+          backgroundColor: theme.cardBg, borderRadius: '0.75rem',
+          border: `1px solid ${theme.border}`, padding: '0.75rem',
           boxShadow: '0 1px 3px rgba(0,0,0,0.04)', height: 'fit-content',
         }}>
           {SECTIONS.map(section => {
@@ -607,7 +606,7 @@ function Settings() {
                 padding: '0.65rem 0.875rem', borderRadius: '0.5rem', border: 'none',
                 backgroundColor: active ? '#FEF2F2' : 'transparent',
                 borderLeft: `3px solid ${active ? '#CC2027' : 'transparent'}`,
-                color: active ? '#CC2027' : '#6B7280',
+                color: active ? '#CC2027' : theme.textSub,
                 fontSize: '0.85rem', fontWeight: active ? '600' : '400',
                 cursor: 'pointer', textAlign: 'left', marginBottom: '0.1rem',
               }}>
@@ -620,22 +619,22 @@ function Settings() {
 
         {/* Right content */}
         <div style={{
-          backgroundColor: 'white', borderRadius: '0.75rem',
-          border: '1px solid #F0F0F0', padding: '2rem',
+          backgroundColor: theme.cardBg, borderRadius: '0.75rem',
+          border: `1px solid ${theme.border}`, padding: '2rem',
           boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
         }}>
 
           {/* ─── MY PROFILE ─── */}
           {activeSection === 'profile' && (
             <div>
-              <p style={{ fontSize: '0.9rem', fontWeight: '700', color: '#111827', marginBottom: '0.25rem' }}>{tx.profile_title}</p>
-              <p style={{ fontSize: '0.78rem', color: '#9CA3AF', marginBottom: '1.5rem' }}>{tx.profile_sub}</p>
+              <p style={{ fontSize: '0.9rem', fontWeight: '700', color: theme.text, marginBottom: '0.25rem' }}>{tx.profile_title}</p>
+              <p style={{ fontSize: '0.78rem', color: theme.textMuted, marginBottom: '1.5rem' }}>{tx.profile_sub}</p>
 
               {/* Avatar + upload */}
               <div style={{
                 display: 'flex', alignItems: 'center', gap: '1.25rem',
                 marginBottom: '1.75rem', padding: '1.25rem',
-                backgroundColor: '#F8F9FB', borderRadius: '0.75rem', border: '1px solid #F0F0F0',
+                backgroundColor: theme.hoverBg, borderRadius: '0.75rem', border: `1px solid ${theme.border}`,
               }}>
                 <div style={{ position: 'relative', flexShrink: 0 }}>
                   <div style={{
@@ -677,12 +676,12 @@ function Settings() {
 
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
-                    <p style={{ fontSize: '1rem', fontWeight: '700', color: '#111827' }}>{user?.name}</p>
+                    <p style={{ fontSize: '1rem', fontWeight: '700', color: theme.text }}>{user?.name}</p>
                     {user?.emailVerified && (
                       <span style={{ fontSize: '0.68rem', fontWeight: '600', backgroundColor: '#EFF6FF', color: '#2563EB', padding: '0.1rem 0.4rem', borderRadius: '9999px', border: '1px solid #BFDBFE' }}>✓ {tx.verified}</span>
                     )}
                   </div>
-                  <p style={{ fontSize: '0.8rem', color: '#6B7280', marginBottom: '0.35rem' }}>{user?.email}</p>
+                  <p style={{ fontSize: '0.8rem', color: theme.textSub, marginBottom: '0.35rem' }}>{user?.email}</p>
                   <span style={{
                     fontSize: '0.72rem', fontWeight: '600',
                     backgroundColor: '#FEF2F2', color: '#CC2027',
@@ -708,7 +707,7 @@ function Settings() {
                     onChange={e => setProfileName(e.target.value)}
                     style={inputStyle}
                     onFocus={e => e.target.style.borderColor = '#CC2027'}
-                    onBlur={e => e.target.style.borderColor = '#E5E7EB'}
+                    onBlur={e => e.target.style.borderColor = theme.borderMed}
                   />
                 </div>
                 <div>
@@ -718,18 +717,18 @@ function Settings() {
                     onChange={e => setProfileEmail(e.target.value)}
                     style={inputStyle}
                     onFocus={e => e.target.style.borderColor = '#CC2027'}
-                    onBlur={e => e.target.style.borderColor = '#E5E7EB'}
+                    onBlur={e => e.target.style.borderColor = theme.borderMed}
                   />
                 </div>
               </div>
 
               {/* Change password */}
               <div style={{
-                padding: '1.25rem', backgroundColor: '#F8F9FB',
-                borderRadius: '0.75rem', border: '1px solid #F0F0F0', marginBottom: '1.25rem',
+                padding: '1.25rem', backgroundColor: theme.hoverBg,
+                borderRadius: '0.75rem', border: `1px solid ${theme.border}`, marginBottom: '1.25rem',
               }}>
-                <p style={{ fontSize: '0.85rem', fontWeight: '600', color: '#374151', marginBottom: '1rem' }}>
-                  {tx.change_pw} <span style={{ fontSize: '0.72rem', fontWeight: '400', color: '#9CA3AF' }}>{tx.pw_hint}</span>
+                <p style={{ fontSize: '0.85rem', fontWeight: '600', color: theme.textMed, marginBottom: '1rem' }}>
+                  {tx.change_pw} <span style={{ fontSize: '0.72rem', fontWeight: '400', color: theme.textMuted }}>{tx.pw_hint}</span>
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                   <div>
@@ -742,12 +741,12 @@ function Settings() {
                         placeholder="••••••••"
                         style={{ ...inputStyle, paddingRight: '2.5rem' }}
                         onFocus={e => e.target.style.borderColor = '#CC2027'}
-                        onBlur={e => e.target.style.borderColor = '#E5E7EB'}
+                        onBlur={e => e.target.style.borderColor = theme.borderMed}
                       />
                       <button type="button" onClick={() => setShowNewPw(!showNewPw)} style={{
                         position: 'absolute', right: '0.75rem', top: '50%',
                         transform: 'translateY(-50%)', background: 'none',
-                        border: 'none', cursor: 'pointer', color: '#9CA3AF',
+                        border: 'none', cursor: 'pointer', color: theme.textMuted,
                       }}>
                         {showNewPw ? <EyeOff size={14} /> : <Eye size={14} />}
                       </button>
@@ -763,15 +762,15 @@ function Settings() {
                         placeholder="••••••••"
                         style={{
                           ...inputStyle, paddingRight: '2.5rem',
-                          borderColor: confirmPassword && confirmPassword !== newPassword ? '#DC2626' : '#E5E7EB',
+                          borderColor: confirmPassword && confirmPassword !== newPassword ? '#DC2626' : theme.borderMed,
                         }}
                         onFocus={e => e.target.style.borderColor = '#CC2027'}
-                        onBlur={e => e.target.style.borderColor = '#E5E7EB'}
+                        onBlur={e => e.target.style.borderColor = theme.borderMed}
                       />
                       <button type="button" onClick={() => setShowConfirmPw(!showConfirmPw)} style={{
                         position: 'absolute', right: '0.75rem', top: '50%',
                         transform: 'translateY(-50%)', background: 'none',
-                        border: 'none', cursor: 'pointer', color: '#9CA3AF',
+                        border: 'none', cursor: 'pointer', color: theme.textMuted,
                       }}>
                         {showConfirmPw ? <EyeOff size={14} /> : <Eye size={14} />}
                       </button>
@@ -804,21 +803,21 @@ function Settings() {
           {/* ─── ROLES & PERMISSIONS ─── */}
           {activeSection === 'permissions' && (
             <div>
-              <p style={{ fontSize: '0.9rem', fontWeight: '700', color: '#111827', marginBottom: '0.25rem' }}>{tx.perm_title}</p>
-              <p style={{ fontSize: '0.78rem', color: '#9CA3AF', marginBottom: '1.25rem' }}>
+              <p style={{ fontSize: '0.9rem', fontWeight: '700', color: theme.text, marginBottom: '0.25rem' }}>{tx.perm_title}</p>
+              <p style={{ fontSize: '0.78rem', color: theme.textMuted, marginBottom: '1.25rem' }}>
                 {isAdmin ? 'View permission matrix and manage user roles' : 'Your access level based on your assigned role'}
               </p>
 
               {/* Permission matrix */}
-              <div style={{ border: '1px solid #F0F0F0', borderRadius: '0.75rem', overflow: 'hidden', marginBottom: isAdmin ? '2rem' : '0' }}>
+              <div style={{ border: `1px solid ${theme.border}`, borderRadius: '0.75rem', overflow: 'hidden', marginBottom: isAdmin ? '2rem' : '0' }}>
                 <div style={{
                   display: 'grid', gridTemplateColumns: '1.6fr repeat(4, 1fr)',
-                  padding: '0.75rem 1rem', backgroundColor: '#F8F9FB',
-                  borderBottom: '1px solid #F0F0F0',
+                  padding: '0.75rem 1rem', backgroundColor: theme.hoverBg,
+                  borderBottom: `1px solid ${theme.border}`,
                 }}>
                   {['Feature', 'Developer', 'Product', 'Manager', 'Admin'].map(h => (
                     <span key={h} style={{
-                      fontSize: '0.68rem', fontWeight: '600', color: '#9CA3AF',
+                      fontSize: '0.68rem', fontWeight: '600', color: theme.textMuted,
                       textTransform: 'uppercase', letterSpacing: '0.05em',
                     }}>{h}</span>
                   ))}
@@ -830,11 +829,11 @@ function Settings() {
                     <div key={perm.feature} style={{
                       display: 'grid', gridTemplateColumns: '1.6fr repeat(4, 1fr)',
                       padding: '0.75rem 1rem',
-                      borderBottom: i < ROLE_PERMISSIONS.length - 1 ? '1px solid #F9FAFB' : 'none',
+                      borderBottom: i < ROLE_PERMISSIONS.length - 1 ? `1px solid ${theme.border}` : 'none',
                       alignItems: 'center',
-                      backgroundColor: hasAccess ? 'white' : '#FAFAFA',
+                      backgroundColor: hasAccess ? theme.cardBg : theme.hoverBg,
                     }}>
-                      <span style={{ fontSize: '0.8rem', color: '#374151', fontWeight: hasAccess ? '500' : '400' }}>
+                      <span style={{ fontSize: '0.8rem', color: theme.textMed, fontWeight: hasAccess ? '500' : '400' }}>
                         {perm.feature}
                       </span>
                       {cols.map((val, ci) => (
@@ -853,11 +852,11 @@ function Settings() {
               {/* Admin: manage user roles */}
               {isAdmin && (
                 <div>
-                  <p style={{ fontSize: '0.9rem', fontWeight: '700', color: '#111827', marginBottom: '0.25rem' }}>{tx.manage_roles}</p>
-                  <p style={{ fontSize: '0.78rem', color: '#9CA3AF', marginBottom: '1rem' }}>{tx.manage_roles_sub}</p>
+                  <p style={{ fontSize: '0.9rem', fontWeight: '700', color: theme.text, marginBottom: '0.25rem' }}>{tx.manage_roles}</p>
+                  <p style={{ fontSize: '0.78rem', color: theme.textMuted, marginBottom: '1rem' }}>{tx.manage_roles_sub}</p>
 
                   {usersLoading && (
-                    <p style={{ color: '#9CA3AF', fontSize: '0.875rem' }}>{tx.loading_users}</p>
+                    <p style={{ color: theme.textMuted, fontSize: '0.875rem' }}>{tx.loading_users}</p>
                   )}
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -869,9 +868,9 @@ function Settings() {
                         <div key={u.id} style={{
                           display: 'flex', alignItems: 'center', gap: '1rem',
                           padding: '0.875rem 1rem',
-                          border: `1px solid ${changed ? '#BFDBFE' : '#F0F0F0'}`,
+                          border: `1px solid ${changed ? '#BFDBFE' : theme.border}`,
                           borderRadius: '0.625rem',
-                          backgroundColor: changed ? '#F0F7FF' : 'white',
+                          backgroundColor: changed ? '#F0F7FF' : theme.cardBg,
                         }}>
                           {/* Avatar */}
                           <div style={{
@@ -891,8 +890,8 @@ function Settings() {
                           </div>
 
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <p style={{ fontSize: '0.85rem', fontWeight: '600', color: '#111827' }}>{u.name}</p>
-                            <p style={{ fontSize: '0.75rem', color: '#9CA3AF' }}>{u.email}</p>
+                            <p style={{ fontSize: '0.85rem', fontWeight: '600', color: theme.text }}>{u.name}</p>
+                            <p style={{ fontSize: '0.75rem', color: theme.textMuted }}>{u.email}</p>
                           </div>
 
                           {/* Role selector */}
@@ -901,7 +900,7 @@ function Settings() {
                             onChange={e => setRoleEdits(prev => ({ ...prev, [u.id]: e.target.value }))}
                             style={{
                               padding: '0.4rem 0.75rem', borderRadius: '0.4rem',
-                              border: `1.5px solid ${changed ? '#2563EB' : '#E5E7EB'}`,
+                              border: `1.5px solid ${changed ? '#2563EB' : theme.borderMed}`,
                               fontSize: '0.78rem', fontWeight: '600',
                               backgroundColor: rs.bg, color: rs.color,
                               cursor: 'pointer', outline: 'none',
@@ -939,11 +938,11 @@ function Settings() {
           {/* ─── AI SCORING CONFIG ─── */}
           {activeSection === 'ai' && (
             <div>
-              <p style={{ fontSize: '0.9rem', fontWeight: '700', color: '#111827', marginBottom: '0.25rem' }}>{tx.ai_title}</p>
-              <p style={{ fontSize: '0.78rem', color: '#9CA3AF', marginBottom: '1.5rem' }}>{tx.ai_sub}</p>
+              <p style={{ fontSize: '0.9rem', fontWeight: '700', color: theme.text, marginBottom: '0.25rem' }}>{tx.ai_title}</p>
+              <p style={{ fontSize: '0.78rem', color: theme.textMuted, marginBottom: '1.5rem' }}>{tx.ai_sub}</p>
 
               {/* Provider cards */}
-              <p style={{ fontSize: '0.78rem', fontWeight: '600', color: '#374151', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{tx.avail_providers}</p>
+              <p style={{ fontSize: '0.78rem', fontWeight: '600', color: theme.textMed, marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{tx.avail_providers}</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.75rem' }}>
                 {AI_PROVIDERS_INFO.map(p => (
                   <div key={p.value} style={{
@@ -959,14 +958,14 @@ function Settings() {
                       }}>
                         {p.label}
                       </span>
-                      <span style={{ fontSize: '0.72rem', color: '#6B7280', fontFamily: 'monospace' }}>
+                      <span style={{ fontSize: '0.72rem', color: theme.textSub, fontFamily: 'monospace' }}>
                         {p.model}
                       </span>
                     </div>
-                    <p style={{ fontSize: '0.75rem', color: '#6B7280', lineHeight: '1.4', marginBottom: '0.5rem' }}>
+                    <p style={{ fontSize: '0.75rem', color: theme.textSub, lineHeight: '1.4', marginBottom: '0.5rem' }}>
                       {p.description}
                     </p>
-                    <p style={{ fontSize: '0.68rem', color: '#9CA3AF', fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                    <p style={{ fontSize: '0.68rem', color: theme.textMuted, fontFamily: 'monospace', wordBreak: 'break-all' }}>
                       {p.endpoint}
                     </p>
                   </div>
@@ -995,19 +994,19 @@ function Settings() {
               {/* Multipliers */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
                 <div>
-                  <p style={{ fontSize: '0.78rem', fontWeight: '600', color: '#374151', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <p style={{ fontSize: '0.78rem', fontWeight: '600', color: theme.textMed, marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     Kano multipliers
                   </p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                     {KANO_MULTIPLIERS.map(m => (
                       <div key={m.label} style={{
                         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                        padding: '0.5rem 0.875rem', backgroundColor: '#F8F9FB',
-                        borderRadius: '0.4rem', border: '1px solid #F0F0F0',
+                        padding: '0.5rem 0.875rem', backgroundColor: theme.hoverBg,
+                        borderRadius: '0.4rem', border: `1px solid ${theme.border}`,
                       }}>
                         <div>
-                          <span style={{ fontSize: '0.78rem', color: '#374151', fontWeight: '500' }}>{m.label}</span>
-                          <span style={{ fontSize: '0.68rem', color: '#9CA3AF', marginLeft: '0.4rem' }}>{m.note}</span>
+                          <span style={{ fontSize: '0.78rem', color: theme.textMed, fontWeight: '500' }}>{m.label}</span>
+                          <span style={{ fontSize: '0.68rem', color: theme.textMuted, marginLeft: '0.4rem' }}>{m.note}</span>
                         </div>
                         <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#CC2027' }}>{m.value}</span>
                       </div>
@@ -1015,15 +1014,15 @@ function Settings() {
                   </div>
                 </div>
                 <div>
-                  <p style={{ fontSize: '0.78rem', fontWeight: '600', color: '#374151', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <p style={{ fontSize: '0.78rem', fontWeight: '600', color: theme.textMed, marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     MoSCoW multipliers
                   </p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                     {MOSCOW_MULTIPLIERS.map(m => (
                       <div key={m.label} style={{
                         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                        padding: '0.5rem 0.875rem', backgroundColor: '#F8F9FB',
-                        borderRadius: '0.4rem', border: '1px solid #F0F0F0',
+                        padding: '0.5rem 0.875rem', backgroundColor: theme.hoverBg,
+                        borderRadius: '0.4rem', border: `1px solid ${theme.border}`,
                       }}>
                         <span style={{ fontSize: '0.78rem', fontWeight: '600', color: m.color }}>{m.label}</span>
                         <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#CC2027' }}>{m.value}</span>
@@ -1052,8 +1051,8 @@ function Settings() {
           {/* ─── NOTIFICATIONS ─── */}
           {activeSection === 'notifications' && (
             <div>
-              <p style={{ fontSize: '0.9rem', fontWeight: '700', color: '#111827', marginBottom: '0.25rem' }}>{tx.notif_title}</p>
-              <p style={{ fontSize: '0.78rem', color: '#9CA3AF', marginBottom: '0.75rem' }}>{tx.notif_sub}</p>
+              <p style={{ fontSize: '0.9rem', fontWeight: '700', color: theme.text, marginBottom: '0.25rem' }}>{tx.notif_title}</p>
+              <p style={{ fontSize: '0.78rem', color: theme.textMuted, marginBottom: '0.75rem' }}>{tx.notif_sub}</p>
 
               {/* Backend note */}
               <div style={{
@@ -1082,18 +1081,18 @@ function Settings() {
                     <div key={item.key} style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                       gap: '1rem', padding: '1rem 0',
-                      borderBottom: i < arr.length - 1 ? '1px solid #F9FAFB' : 'none',
+                      borderBottom: i < arr.length - 1 ? `1px solid ${theme.border}` : 'none',
                     }}>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                          <p style={{ fontSize: '0.85rem', fontWeight: '500', color: '#374151' }}>
+                          <p style={{ fontSize: '0.85rem', fontWeight: '500', color: theme.textMed }}>
                             {item.label}
                           </p>
                           {item.managerOnly && (
                             <span style={{ fontSize: '0.65rem', fontWeight: '600', backgroundColor: '#F5F3FF', color: '#7C3AED', padding: '0.1rem 0.4rem', borderRadius: '9999px', border: '1px solid #DDD6FE' }}>{tx.manager_plus}</span>
                           )}
                         </div>
-                        <p style={{ fontSize: '0.75rem', color: '#9CA3AF', marginTop: '0.15rem' }}>
+                        <p style={{ fontSize: '0.75rem', color: theme.textMuted, marginTop: '0.15rem' }}>
                           {item.desc}
                         </p>
                       </div>
@@ -1107,7 +1106,7 @@ function Settings() {
               </div>
 
               {/* Notification method */}
-              <div style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid #F0F0F0' }}>
+              <div style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: `1px solid ${theme.border}` }}>
                 <label style={labelStyle}>{tx.delivery_method}</label>
                 <div style={{ display: 'flex', gap: '0.75rem' }}>
                   {[
@@ -1119,9 +1118,9 @@ function Settings() {
                       onClick={() => setNotifications(prev => ({ ...prev, method: opt.value }))}
                       style={{
                         padding: '0.5rem 1rem', borderRadius: '0.5rem',
-                        border: `1.5px solid ${notifications.method === opt.value ? '#CC2027' : '#E5E7EB'}`,
-                        backgroundColor: notifications.method === opt.value ? '#FEF2F2' : 'white',
-                        color: notifications.method === opt.value ? '#CC2027' : '#6B7280',
+                        border: `1.5px solid ${notifications.method === opt.value ? '#CC2027' : theme.borderMed}`,
+                        backgroundColor: notifications.method === opt.value ? '#FEF2F2' : theme.cardBg,
+                        color: notifications.method === opt.value ? '#CC2027' : theme.textSub,
                         fontSize: '0.825rem', fontWeight: '500', cursor: 'pointer',
                       }}
                     >
@@ -1152,14 +1151,14 @@ function Settings() {
           {/* ─── CONNECTED ACCOUNTS ─── */}
           {activeSection === 'git' && (
             <div>
-              <p style={{ fontSize: '0.9rem', fontWeight: '700', color: '#111827', marginBottom: '0.25rem' }}>{tx.git_title}</p>
-              <p style={{ fontSize: '0.78rem', color: '#9CA3AF', marginBottom: '1.5rem' }}>
+              <p style={{ fontSize: '0.9rem', fontWeight: '700', color: theme.text, marginBottom: '0.25rem' }}>{tx.git_title}</p>
+              <p style={{ fontSize: '0.78rem', color: theme.textMuted, marginBottom: '1.5rem' }}>
                 Link your GitHub or GitLab account to commit code directly from PriorIT tasks.
                 Your access token is stored securely on the server — never exposed to the browser.
               </p>
 
               {gitLoading ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '2rem', color: '#9CA3AF' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '2rem', color: theme.textMuted }}>
                   <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />
                   <span style={{ fontSize: '0.85rem' }}>Loading account status…</span>
                 </div>
@@ -1178,9 +1177,9 @@ function Settings() {
                       <div key={provider} style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                         gap: '1rem', padding: '1.25rem 1.5rem',
-                        border: `1.5px solid ${connected ? (provider === 'github' ? '#D1D5DB' : '#FDD5C0') : '#F0F0F0'}`,
+                        border: `1.5px solid ${connected ? (provider === 'github' ? '#D1D5DB' : '#FDD5C0') : theme.border}`,
                         borderRadius: '0.75rem',
-                        backgroundColor: connected ? bgColor : 'white',
+                        backgroundColor: connected ? bgColor : theme.cardBg,
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                           <div style={{
@@ -1193,7 +1192,7 @@ function Settings() {
                           </div>
                           <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
-                              <p style={{ fontSize: '0.9rem', fontWeight: '700', color: '#111827' }}>{label}</p>
+                              <p style={{ fontSize: '0.9rem', fontWeight: '700', color: theme.text }}>{label}</p>
                               {connected && (
                                 <span style={{
                                   display: 'flex', alignItems: 'center', gap: '0.25rem',
@@ -1208,11 +1207,11 @@ function Settings() {
                               )}
                             </div>
                             {connected ? (
-                              <p style={{ fontSize: '0.8rem', color: '#6B7280' }}>
-                                Signed in as <strong style={{ color: '#111827' }}>@{username}</strong>
+                              <p style={{ fontSize: '0.8rem', color: theme.textSub }}>
+                                Signed in as <strong style={{ color: theme.text }}>@{username}</strong>
                               </p>
                             ) : (
-                              <p style={{ fontSize: '0.8rem', color: '#9CA3AF' }}>
+                              <p style={{ fontSize: '0.8rem', color: theme.textMuted }}>
                                 Not connected — click to authorise via OAuth
                               </p>
                             )}
@@ -1229,8 +1228,8 @@ function Settings() {
                                 style={{
                                   display: 'flex', alignItems: 'center', gap: '0.3rem',
                                   padding: '0.45rem 0.875rem', borderRadius: '0.45rem',
-                                  border: '1px solid #E5E7EB', backgroundColor: 'white',
-                                  color: '#374151', fontSize: '0.78rem', fontWeight: '500',
+                                  border: `1px solid ${theme.borderMed}`, backgroundColor: theme.cardBg,
+                                  color: theme.textMed, fontSize: '0.78rem', fontWeight: '500',
                                   textDecoration: 'none',
                                 }}
                               >
@@ -1280,9 +1279,9 @@ function Settings() {
                     const jiraConnected = jiraStatus?.connected;
                     return (
                       <div style={{
-                        border: `1.5px solid ${jiraConnected ? '#BAE6FD' : '#F0F0F0'}`,
+                        border: `1.5px solid ${jiraConnected ? '#BAE6FD' : theme.border}`,
                         borderRadius: '0.75rem',
-                        backgroundColor: jiraConnected ? '#F0F9FF' : 'white',
+                        backgroundColor: jiraConnected ? '#F0F9FF' : theme.cardBg,
                         overflow: 'hidden',
                       }}>
                         {/* Card header */}
@@ -1301,7 +1300,7 @@ function Settings() {
                             </div>
                             <div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
-                                <p style={{ fontSize: '0.9rem', fontWeight: '700', color: '#111827' }}>Jira</p>
+                                <p style={{ fontSize: '0.9rem', fontWeight: '700', color: theme.text }}>Jira</p>
                                 {jiraConnected && (
                                   <span style={{
                                     display: 'flex', alignItems: 'center', gap: '0.25rem',
@@ -1316,12 +1315,12 @@ function Settings() {
                                 )}
                               </div>
                               {jiraConnected ? (
-                                <p style={{ fontSize: '0.8rem', color: '#6B7280' }}>
-                                  <strong style={{ color: '#111827' }}>{jiraStatus.domain}</strong>
+                                <p style={{ fontSize: '0.8rem', color: theme.textSub }}>
+                                  <strong style={{ color: theme.text }}>{jiraStatus.domain}</strong>
                                   {' · '}{jiraStatus.jiraEmail}
                                 </p>
                               ) : (
-                                <p style={{ fontSize: '0.8rem', color: '#9CA3AF' }}>
+                                <p style={{ fontSize: '0.8rem', color: theme.textMuted }}>
                                   Connect with API token — no OAuth required
                                 </p>
                               )}
@@ -1337,8 +1336,8 @@ function Settings() {
                                 style={{
                                   display: 'flex', alignItems: 'center', gap: '0.3rem',
                                   padding: '0.45rem 0.875rem', borderRadius: '0.45rem',
-                                  border: '1px solid #E5E7EB', backgroundColor: 'white',
-                                  color: '#374151', fontSize: '0.78rem', fontWeight: '500',
+                                  border: `1px solid ${theme.borderMed}`, backgroundColor: theme.cardBg,
+                                  color: theme.textMed, fontSize: '0.78rem', fontWeight: '500',
                                   textDecoration: 'none',
                                 }}
                               >
@@ -1370,7 +1369,7 @@ function Settings() {
                         {!jiraConnected && (
                           <div style={{
                             padding: '0 1.5rem 1.5rem',
-                            borderTop: '1px solid #F0F0F0',
+                            borderTop: `1px solid ${theme.border}`,
                           }}>
                             <div style={{ paddingTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
                               <div>
@@ -1382,7 +1381,7 @@ function Settings() {
                                   placeholder="yourcompany.atlassian.net"
                                   style={inputStyle}
                                   onFocus={e => e.target.style.borderColor = '#0052CC'}
-                                  onBlur={e => e.target.style.borderColor = '#E5E7EB'}
+                                  onBlur={e => e.target.style.borderColor = theme.borderMed}
                                 />
                               </div>
                               <div>
@@ -1394,7 +1393,7 @@ function Settings() {
                                   placeholder="you@yourcompany.com"
                                   style={inputStyle}
                                   onFocus={e => e.target.style.borderColor = '#0052CC'}
-                                  onBlur={e => e.target.style.borderColor = '#E5E7EB'}
+                                  onBlur={e => e.target.style.borderColor = theme.borderMed}
                                 />
                               </div>
                               <div>
@@ -1407,17 +1406,17 @@ function Settings() {
                                     placeholder="Paste your Atlassian API token"
                                     style={{ ...inputStyle, paddingRight: '2.5rem' }}
                                     onFocus={e => e.target.style.borderColor = '#0052CC'}
-                                    onBlur={e => e.target.style.borderColor = '#E5E7EB'}
+                                    onBlur={e => e.target.style.borderColor = theme.borderMed}
                                   />
                                   <button type="button" onClick={() => setShowJiraToken(!showJiraToken)} style={{
                                     position: 'absolute', right: '0.75rem', top: '50%',
                                     transform: 'translateY(-50%)', background: 'none',
-                                    border: 'none', cursor: 'pointer', color: '#9CA3AF',
+                                    border: 'none', cursor: 'pointer', color: theme.textMuted,
                                   }}>
                                     {showJiraToken ? <EyeOff size={14} /> : <Eye size={14} />}
                                   </button>
                                 </div>
-                                <p style={{ fontSize: '0.72rem', color: '#9CA3AF', marginTop: '0.35rem' }}>
+                                <p style={{ fontSize: '0.72rem', color: theme.textMuted, marginTop: '0.35rem' }}>
                                   Generate at <strong>id.atlassian.com → Security → API tokens</strong>
                                 </p>
                               </div>

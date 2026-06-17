@@ -3,6 +3,7 @@ import {
   LayoutDashboard, Brain, CheckCircle,
   Clock, TrendingUp, AlertCircle, RefreshCw
 } from 'lucide-react';
+import EmptyState from '../components/ui/EmptyState';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, PieChart, Pie,
@@ -14,6 +15,7 @@ import taskService from '../services/taskService';
 import doraService from '../services/doraService';
 import useAuthStore from '../store/authStore';
 import { useLanguage, useDynamicTranslation } from '../i18n/LanguageContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 const extractDashboardStrings = (items) => [
   ...new Set(items.flatMap(item => [item.title, item.taskType].filter(Boolean)))
@@ -39,11 +41,11 @@ function computeStatsFromTasks(allTasks) {
   };
 }
 
-function KPICard({ label, value, subtitle, icon, bg, border, color }) {
+function KPICard({ label, value, subtitle, icon, bg, border, theme }) {
   return (
     <div style={{
-      backgroundColor: 'white', borderRadius: '0.75rem',
-      padding: '1.25rem', border: '1px solid #F0F0F0',
+      backgroundColor: theme.cardBg, borderRadius: '0.75rem',
+      padding: '1.25rem', border: `1px solid ${theme.border}`,
       boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
       display: 'flex', alignItems: 'flex-start', gap: '1rem',
     }}>
@@ -56,14 +58,14 @@ function KPICard({ label, value, subtitle, icon, bg, border, color }) {
         {icon}
       </div>
       <div style={{ flex: 1 }}>
-        <p style={{ fontSize: '1.75rem', fontWeight: '700', color: '#111827', lineHeight: 1 }}>
+        <p style={{ fontSize: '1.75rem', fontWeight: '700', color: theme.text, lineHeight: 1 }}>
           {value}
         </p>
-        <p style={{ fontSize: '0.8rem', fontWeight: '600', color: '#374151', marginTop: '0.25rem' }}>
+        <p style={{ fontSize: '0.8rem', fontWeight: '600', color: theme.textMed, marginTop: '0.25rem' }}>
           {label}
         </p>
         {subtitle && (
-          <p style={{ fontSize: '0.72rem', color: '#9CA3AF', marginTop: '0.15rem' }}>
+          <p style={{ fontSize: '0.72rem', color: theme.textMuted, marginTop: '0.15rem' }}>
             {subtitle}
           </p>
         )}
@@ -80,6 +82,7 @@ const MOSCOW_COLORS = {
 function Dashboard() {
   const { user } = useAuthStore();
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const isPrivileged = user?.role === 'ADMIN' || user?.role === 'IT_MANAGER';
   const [stats, setStats] = useState(null);
   const [tasks, setTasks] = useState([]);
@@ -166,7 +169,7 @@ function Dashboard() {
       )}
 
       {isLoading ? (
-        <div style={{ textAlign: 'center', padding: '4rem', color: '#9CA3AF' }}>
+        <div style={{ textAlign: 'center', padding: '4rem', color: theme.textMuted }}>
           <p>{t('dash_loading')}</p>
         </div>
       ) : stats && (
@@ -176,28 +179,28 @@ function Dashboard() {
             display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
             gap: '1rem', marginBottom: '1rem',
           }}>
-            <KPICard
+            <KPICard theme={theme}
               label={isPrivileged ? t('dash_total_tasks') : 'My Tasks'}
               value={stats.totalTasks}
               subtitle={isPrivileged ? t('dash_in_backlog') : 'Tasks you have submitted'}
               icon={<LayoutDashboard size={20} color="#2563EB" />}
               bg="#EFF6FF" border="#BFDBFE"
             />
-            <KPICard
+            <KPICard theme={theme}
               label={t('dash_ai_scored')}
               value={stats.aiScoredTasks}
               subtitle={`${stats.totalTasks > 0 ? Math.round((stats.aiScoredTasks / stats.totalTasks) * 100) : 0}% of backlog`}
               icon={<Brain size={20} color="#7C3AED" />}
               bg="#F5F3FF" border="#DDD6FE"
             />
-            <KPICard
+            <KPICard theme={theme}
               label={t('dash_must_do')}
               value={stats.mustTasks}
               subtitle={`${mustPct}% of scored tasks`}
               icon={<AlertCircle size={20} color="#DC2626" />}
               bg="#FEF2F2" border="#FECACA"
             />
-            <KPICard
+            <KPICard theme={theme}
               label={t('dash_avg_score')}
               value={stats.avgFinalScore?.toFixed(1)}
               subtitle={`Avg confidence: ${(stats.avgConfidence * 100).toFixed(0)}%`}
@@ -211,14 +214,14 @@ function Dashboard() {
             display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
             gap: '1rem', marginBottom: '1.5rem',
           }}>
-            <KPICard
+            <KPICard theme={theme}
               label={t('dash_pending')}
               value={stats.pendingTasks}
               subtitle={t('dash_pending_subtitle')}
               icon={<Clock size={20} color="#D97706" />}
               bg="#FFF7ED" border="#FDE68A"
             />
-            <KPICard
+            <KPICard theme={theme}
               label={t('dash_overridden')}
               value={stats.overrideTasks}
               subtitle={t('dash_overridden_subtitle')}
@@ -233,13 +236,13 @@ function Dashboard() {
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                  <p style={{ fontSize: '1.75rem', fontWeight: '700', color: '#111827', lineHeight: 1 }}>
+                  <p style={{ fontSize: '1.75rem', fontWeight: '700', color: theme.text, lineHeight: 1 }}>
                     {mustPct}%
                   </p>
-                  <p style={{ fontSize: '0.8rem', fontWeight: '600', color: '#374151', marginTop: '0.25rem' }}>
+                  <p style={{ fontSize: '0.8rem', fontWeight: '600', color: theme.textMed, marginTop: '0.25rem' }}>
                     {t('dash_moscow_ratio')}
                   </p>
-                  <p style={{ fontSize: '0.72rem', color: '#9CA3AF', marginTop: '0.15rem' }}>
+                  <p style={{ fontSize: '0.72rem', color: theme.textMuted, marginTop: '0.15rem' }}>
                     {t('dash_target')}
                   </p>
                 </div>
@@ -260,17 +263,16 @@ function Dashboard() {
             display: 'grid', gridTemplateColumns: '1fr 1fr',
             gap: '1.25rem', marginBottom: '1.5rem',
           }}>
-            {/* Pie chart */}
             <div style={{
-              backgroundColor: 'white', borderRadius: '0.75rem',
-              padding: '1.5rem', border: '1px solid #F0F0F0',
+              backgroundColor: theme.cardBg, borderRadius: '0.75rem',
+              padding: '1.5rem', border: `1px solid ${theme.border}`,
               boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
             }}>
               <div style={{ marginBottom: '1rem' }}>
-                <h3 style={{ fontSize: '0.9rem', fontWeight: '700', color: '#111827' }}>
+                <h3 style={{ fontSize: '0.9rem', fontWeight: '700', color: theme.text }}>
                   {t('dash_charts_moscow')}
                 </h3>
-                <p style={{ fontSize: '0.75rem', color: '#9CA3AF' }}>
+                <p style={{ fontSize: '0.75rem', color: theme.textMuted }}>
                   {t('dash_charts_moscow_target')}
                 </p>
               </div>
@@ -291,24 +293,20 @@ function Dashboard() {
                   </PieChart>
                 </ResponsiveContainer>
               ) : (
-                <div style={{ textAlign: 'center', padding: '3rem', color: '#9CA3AF' }}>
-                  <Brain size={24} color="#E5E7EB" style={{ marginBottom: '0.5rem' }} />
-                  <p style={{ fontSize: '0.875rem' }}>{t('dash_no_scored')}</p>
-                </div>
+                <EmptyState variant="scoring" title={t('dash_no_scored')} compact />
               )}
             </div>
 
-            {/* Bar chart */}
             <div style={{
-              backgroundColor: 'white', borderRadius: '0.75rem',
-              padding: '1.5rem', border: '1px solid #F0F0F0',
+              backgroundColor: theme.cardBg, borderRadius: '0.75rem',
+              padding: '1.5rem', border: `1px solid ${theme.border}`,
               boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
             }}>
               <div style={{ marginBottom: '1rem' }}>
-                <h3 style={{ fontSize: '0.9rem', fontWeight: '700', color: '#111827' }}>
+                <h3 style={{ fontSize: '0.9rem', fontWeight: '700', color: theme.text }}>
                   {t('dash_charts_top5')}
                 </h3>
-                <p style={{ fontSize: '0.75rem', color: '#9CA3AF' }}>
+                <p style={{ fontSize: '0.75rem', color: theme.textMuted }}>
                   {t('dash_ranked_by_rice')}
                 </p>
               </div>
@@ -328,53 +326,49 @@ function Dashboard() {
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div style={{ textAlign: 'center', padding: '3rem', color: '#9CA3AF' }}>
-                  <Brain size={24} color="#E5E7EB" style={{ marginBottom: '0.5rem' }} />
-                  <p style={{ fontSize: '0.875rem' }}>{t('dash_no_scored')}</p>
-                </div>
+                <EmptyState variant="scoring" title={t('dash_no_scored')} compact />
               )}
             </div>
           </div>
 
           {/* Recent tasks table */}
           <div style={{
-            backgroundColor: 'white', borderRadius: '0.75rem',
-            border: '1px solid #F0F0F0',
+            backgroundColor: theme.cardBg, borderRadius: '0.75rem',
+            border: `1px solid ${theme.border}`,
             boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
             overflow: 'hidden',
           }}>
             <div style={{
-              padding: '1.25rem 1.5rem', borderBottom: '1px solid #F9FAFB',
+              padding: '1.25rem 1.5rem', borderBottom: `1px solid ${theme.border}`,
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             }}>
               <div>
-                <h3 style={{ fontSize: '0.9rem', fontWeight: '700', color: '#111827' }}>
+                <h3 style={{ fontSize: '0.9rem', fontWeight: '700', color: theme.text }}>
                   {isPrivileged ? t('dash_top_ranked') : 'Your Top Scored Tasks'}
                 </h3>
-                <p style={{ fontSize: '0.75rem', color: '#9CA3AF' }}>
+                <p style={{ fontSize: '0.75rem', color: theme.textMuted }}>
                   {isPrivileged ? t('dash_top_ranked_subtitle') : 'Your highest-priority tasks ranked by AI score'}
                 </p>
               </div>
               <button onClick={loadData} style={{
                 display: 'flex', alignItems: 'center', gap: '0.4rem',
-                padding: '0.4rem 0.85rem', backgroundColor: 'white',
-                border: '1.5px solid #E5E7EB', borderRadius: '0.5rem',
-                fontSize: '0.78rem', color: '#6B7280', cursor: 'pointer',
+                padding: '0.4rem 0.85rem', backgroundColor: theme.cardBg,
+                border: `1.5px solid ${theme.borderMed}`, borderRadius: '0.5rem',
+                fontSize: '0.78rem', color: theme.textSub, cursor: 'pointer',
               }}>
                 <RefreshCw size={13} />
                 {t('refresh')}
               </button>
             </div>
 
-            {/* Table header */}
             <div style={{
               display: 'grid', gridTemplateColumns: '2rem 1fr 1fr 1fr 1fr 1fr',
-              padding: '0.75rem 1.5rem', backgroundColor: '#F8F9FB',
-              borderBottom: '1px solid #F0F0F0',
+              padding: '0.75rem 1.5rem', backgroundColor: theme.hoverBg,
+              borderBottom: `1px solid ${theme.border}`,
             }}>
               {['#', t('task_name'), t('task_type'), 'Kano', 'MoSCoW', t('final_score')].map(h => (
                 <span key={h} style={{
-                  fontSize: '0.7rem', fontWeight: '600', color: '#9CA3AF',
+                  fontSize: '0.7rem', fontWeight: '600', color: theme.textMuted,
                   textTransform: 'uppercase', letterSpacing: '0.05em',
                 }}>
                   {h}
@@ -387,17 +381,17 @@ function Dashboard() {
                 display: 'grid',
                 gridTemplateColumns: '2rem 1fr 1fr 1fr 1fr 1fr',
                 padding: '0.875rem 1.5rem',
-                borderBottom: index < tasks.length - 1 ? '1px solid #F9FAFB' : 'none',
+                borderBottom: index < tasks.length - 1 ? `1px solid ${theme.border}` : 'none',
                 alignItems: 'center',
               }}>
                 <span style={{
                   fontSize: '0.78rem', fontWeight: '700',
-                  color: index < 3 ? '#CC2027' : '#9CA3AF',
+                  color: index < 3 ? '#CC2027' : theme.textMuted,
                 }}>
                   #{index + 1}
                 </span>
                 <span style={{
-                  fontSize: '0.825rem', fontWeight: '500', color: '#111827',
+                  fontSize: '0.825rem', fontWeight: '500', color: theme.text,
                   overflow: 'hidden', textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap', paddingRight: '1rem',
                 }}>
@@ -405,10 +399,10 @@ function Dashboard() {
                 </span>
                 <span style={{
                   fontSize: '0.72rem',
-                  color: task.taskTypeColor || '#6B7280',
-                  backgroundColor: task.taskTypeColor ? `${task.taskTypeColor}15` : '#F3F4F6',
+                  color: task.taskTypeColor || theme.textSub,
+                  backgroundColor: task.taskTypeColor ? `${task.taskTypeColor}15` : theme.tagBg,
                   padding: '0.15rem 0.5rem', borderRadius: '4px',
-                  border: `1px solid ${task.taskTypeColor ? `${task.taskTypeColor}30` : '#E5E7EB'}`,
+                  border: `1px solid ${task.taskTypeColor ? `${task.taskTypeColor}30` : theme.borderMed}`,
                   fontWeight: '500', display: 'inline-block',
                 }}>
                   {txData?.[task.taskType] || task.taskType}
@@ -416,7 +410,7 @@ function Dashboard() {
                 <span style={{
                   fontSize: '0.72rem', fontWeight: '600',
                   padding: '0.15rem 0.5rem', borderRadius: '9999px',
-                  backgroundColor: '#F3F4F6', color: '#374151',
+                  backgroundColor: theme.tagBg, color: theme.textMed,
                   display: 'inline-block',
                 }}>
                   {task.kanoCategory}
@@ -437,19 +431,16 @@ function Dashboard() {
             ))}
 
             {tasks.length === 0 && (
-              <div style={{ padding: '2.5rem', textAlign: 'center', color: '#9CA3AF' }}>
-                <Brain size={28} color="#E5E7EB" style={{ marginBottom: '0.75rem' }} />
-                <p style={{ fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.25rem' }}>
-                  {t('dash_no_scored')}
-                </p>
-                <p style={{ fontSize: '0.78rem' }}>
-                  {t('dash_go_scoring')}
-                </p>
-              </div>
+              <EmptyState
+                variant="tasks"
+                title={t('dash_no_scored')}
+                subtitle={t('dash_go_scoring')}
+                compact
+              />
             )}
           </div>
 
-          {/* DORA KPI Panel — team-wide metrics, privileged users only */}
+          {/* DORA KPI Panel — team-wide metrics, stays dark by design */}
           {isPrivileged && doraSummary && (
             <div style={{
               backgroundColor: '#1A1A2E', borderRadius: '0.75rem',

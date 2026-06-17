@@ -4,10 +4,12 @@ import {
   BriefcaseBusiness, Plus, Loader2, AlertCircle, RefreshCw,
   Clock, CheckCircle2, ChevronRight, Zap, X, ListTodo,
 } from 'lucide-react';
+import EmptyState from '../components/ui/EmptyState';
 import PageWrapper from '../components/layout/PageWrapper';
 import workplaceService from '../services/workplaceService';
 import taskService from '../services/taskService';
 import { useLanguage } from '../i18n/LanguageContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 const STATUS_STYLE = {
   ACTIVE:     { bg: '#F0FDF4', color: '#16A34A', border: '#BBF7D0', dot: '#16A34A' },
@@ -23,10 +25,11 @@ const RISK_STYLE = {
 };
 
 function StatCard({ icon: Icon, label, value, accent }) {
+  const { theme } = useTheme();
   return (
     <div style={{
-      backgroundColor: 'white', borderRadius: '0.75rem',
-      padding: '1.25rem', border: '1px solid #F0F0F0',
+      backgroundColor: theme.cardBg, borderRadius: '0.75rem',
+      padding: '1.25rem', border: `1px solid ${theme.border}`,
       boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
       display: 'flex', alignItems: 'center', gap: '1rem',
     }}>
@@ -38,8 +41,8 @@ function StatCard({ icon: Icon, label, value, accent }) {
         <Icon size={18} color={accent} />
       </div>
       <div>
-        <p style={{ fontSize: '1.5rem', fontWeight: '700', color: '#111827', lineHeight: 1 }}>{value}</p>
-        <p style={{ fontSize: '0.75rem', color: '#6B7280', marginTop: '0.2rem' }}>{label}</p>
+        <p style={{ fontSize: '1.5rem', fontWeight: '700', color: theme.text, lineHeight: 1 }}>{value}</p>
+        <p style={{ fontSize: '0.75rem', color: theme.textSub, marginTop: '0.2rem' }}>{label}</p>
       </div>
     </div>
   );
@@ -47,6 +50,7 @@ function StatCard({ icon: Icon, label, value, accent }) {
 
 function WorkplaceCard({ wp, onOpen }) {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const statusStyle = STATUS_STYLE[wp.status] || STATUS_STYLE.ACTIVE;
   const riskStyle   = RISK_STYLE[wp.changeFailureRisk] || RISK_STYLE.MEDIUM;
   const doneCnt     = wp.subtasks?.filter(s => s.status === 'DONE').length ?? 0;
@@ -55,8 +59,8 @@ function WorkplaceCard({ wp, onOpen }) {
 
   return (
     <div style={{
-      backgroundColor: 'white', borderRadius: '0.75rem',
-      border: '1px solid #F0F0F0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+      backgroundColor: theme.cardBg, borderRadius: '0.75rem',
+      border: `1px solid ${theme.border}`, boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
       overflow: 'hidden', display: 'flex', flexDirection: 'column',
       transition: 'box-shadow 0.15s',
     }}
@@ -70,11 +74,11 @@ function WorkplaceCard({ wp, onOpen }) {
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
           <div style={{ flex: 1, minWidth: 0, marginRight: '0.75rem' }}>
-            <p style={{ fontSize: '0.7rem', color: '#6B7280', marginBottom: '0.2rem' }}>
+            <p style={{ fontSize: '0.7rem', color: theme.textSub, marginBottom: '0.2rem' }}>
               {wp.taskType}
             </p>
             <h3 style={{
-              fontSize: '0.9rem', fontWeight: '700', color: '#111827',
+              fontSize: '0.9rem', fontWeight: '700', color: theme.text,
               overflow: 'hidden', textOverflow: 'ellipsis',
               display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
             }}>
@@ -95,10 +99,10 @@ function WorkplaceCard({ wp, onOpen }) {
         {/* Progress bar */}
         <div style={{ marginBottom: '1rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
-            <span style={{ fontSize: '0.7rem', color: '#6B7280' }}>{t('workplace_progress')}</span>
-            <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#111827' }}>{pct}%</span>
+            <span style={{ fontSize: '0.7rem', color: theme.textSub }}>{t('workplace_progress')}</span>
+            <span style={{ fontSize: '0.7rem', fontWeight: '700', color: theme.text }}>{pct}%</span>
           </div>
-          <div style={{ height: '6px', backgroundColor: '#F3F4F6', borderRadius: '9999px', overflow: 'hidden' }}>
+          <div style={{ height: '6px', backgroundColor: theme.tagBg, borderRadius: '9999px', overflow: 'hidden' }}>
             <div style={{
               height: '100%', borderRadius: '9999px',
               width: `${pct}%`,
@@ -112,21 +116,21 @@ function WorkplaceCard({ wp, onOpen }) {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
           <div style={{
             display: 'flex', alignItems: 'center', gap: '0.3rem',
-            backgroundColor: '#F9FAFB', borderRadius: '0.35rem',
+            backgroundColor: theme.tagBg, borderRadius: '0.35rem',
             padding: '0.25rem 0.5rem',
           }}>
-            <Clock size={12} color="#6B7280" />
-            <span style={{ fontSize: '0.7rem', color: '#6B7280' }}>
+            <Clock size={12} color={theme.textSub} />
+            <span style={{ fontSize: '0.7rem', color: theme.textSub }}>
               {wp.totalEstimatedHours}h
             </span>
           </div>
           <div style={{
             display: 'flex', alignItems: 'center', gap: '0.3rem',
-            backgroundColor: '#F9FAFB', borderRadius: '0.35rem',
+            backgroundColor: theme.tagBg, borderRadius: '0.35rem',
             padding: '0.25rem 0.5rem',
           }}>
-            <ListTodo size={12} color="#6B7280" />
-            <span style={{ fontSize: '0.7rem', color: '#6B7280' }}>
+            <ListTodo size={12} color={theme.textSub} />
+            <span style={{ fontSize: '0.7rem', color: theme.textSub }}>
               {doneCnt}/{total} {t('workplace_subtasks')}
             </span>
           </div>
@@ -145,7 +149,7 @@ function WorkplaceCard({ wp, onOpen }) {
       {/* Footer */}
       <div style={{
         padding: '0.75rem 1.25rem',
-        borderTop: '1px solid #F9FAFB',
+        borderTop: `1px solid ${theme.border}`,
         display: 'flex', justifyContent: 'flex-end',
       }}>
         <button onClick={() => onOpen(wp.id)} style={{
@@ -164,6 +168,7 @@ function WorkplaceCard({ wp, onOpen }) {
 
 function TaskPickerModal({ tasks, generating, onGenerate, onClose }) {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const [search, setSearch] = useState('');
 
   const filtered = tasks.filter(task =>
@@ -177,7 +182,7 @@ function TaskPickerModal({ tasks, generating, onGenerate, onClose }) {
       zIndex: 1000, padding: '1rem',
     }}>
       <div style={{
-        backgroundColor: 'white', borderRadius: '0.75rem',
+        backgroundColor: theme.cardBg, borderRadius: '0.75rem',
         width: '100%', maxWidth: '540px', maxHeight: '80vh',
         display: 'flex', flexDirection: 'column',
         boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
@@ -185,27 +190,27 @@ function TaskPickerModal({ tasks, generating, onGenerate, onClose }) {
         {/* Modal header */}
         <div style={{
           padding: '1.25rem 1.5rem',
-          borderBottom: '1px solid #F0F0F0',
+          borderBottom: `1px solid ${theme.border}`,
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         }}>
           <div>
-            <h2 style={{ fontSize: '1rem', fontWeight: '700', color: '#111827' }}>
+            <h2 style={{ fontSize: '1rem', fontWeight: '700', color: theme.text }}>
               {t('workplace_pick_task')}
             </h2>
-            <p style={{ fontSize: '0.78rem', color: '#6B7280', marginTop: '0.1rem' }}>
+            <p style={{ fontSize: '0.78rem', color: theme.textSub, marginTop: '0.1rem' }}>
               {t('workplace_pick_subtitle')}
             </p>
           </div>
           <button onClick={onClose} style={{
             border: 'none', background: 'none', cursor: 'pointer',
-            color: '#6B7280', padding: '0.25rem',
+            color: theme.textSub, padding: '0.25rem',
           }}>
             <X size={18} />
           </button>
         </div>
 
         {/* Search */}
-        <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid #F0F0F0' }}>
+        <div style={{ padding: '1rem 1.5rem', borderBottom: `1px solid ${theme.border}` }}>
           <input
             type="text"
             placeholder={t('workplace_search_tasks')}
@@ -213,8 +218,8 @@ function TaskPickerModal({ tasks, generating, onGenerate, onClose }) {
             onChange={e => setSearch(e.target.value)}
             style={{
               width: '100%', padding: '0.6rem 0.875rem',
-              border: '1px solid #E5E7EB', borderRadius: '0.5rem',
-              fontSize: '0.85rem', backgroundColor: '#FAFAFA',
+              border: `1px solid ${theme.borderMed}`, borderRadius: '0.5rem',
+              fontSize: '0.85rem', backgroundColor: theme.inputBg, color: theme.text,
               outline: 'none', boxSizing: 'border-box',
             }}
           />
@@ -223,8 +228,8 @@ function TaskPickerModal({ tasks, generating, onGenerate, onClose }) {
         {/* Task list */}
         <div style={{ overflowY: 'auto', flex: 1, padding: '0.75rem 1rem' }}>
           {filtered.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '2rem', color: '#6B7280' }}>
-              <BriefcaseBusiness size={32} color="#D1D5DB" style={{ margin: '0 auto 0.75rem' }} />
+            <div style={{ textAlign: 'center', padding: '2rem', color: theme.textSub }}>
+              <BriefcaseBusiness size={32} color={theme.textMuted} style={{ margin: '0 auto 0.75rem' }} />
               <p style={{ fontSize: '0.85rem' }}>{t('workplace_no_tasks')}</p>
               <p style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>{t('workplace_no_tasks_hint')}</p>
             </div>
@@ -237,27 +242,27 @@ function TaskPickerModal({ tasks, generating, onGenerate, onClose }) {
                 style={{
                   width: '100%', textAlign: 'left',
                   padding: '0.875rem 1rem', borderRadius: '0.5rem',
-                  border: '1px solid #F0F0F0', marginBottom: '0.5rem',
-                  backgroundColor: 'white', cursor: generating ? 'not-allowed' : 'pointer',
+                  border: `1px solid ${theme.border}`, marginBottom: '0.5rem',
+                  backgroundColor: theme.cardBg, cursor: generating ? 'not-allowed' : 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   opacity: generating ? 0.6 : 1,
                   transition: 'all 0.1s',
                 }}
-                onMouseEnter={e => { if (!generating) e.currentTarget.style.backgroundColor = '#FAFAFA'; }}
-                onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'white'; }}
+                onMouseEnter={e => { if (!generating) e.currentTarget.style.backgroundColor = theme.hoverBg; }}
+                onMouseLeave={e => { e.currentTarget.style.backgroundColor = theme.cardBg; }}
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
                     <span style={{
                       padding: '0.15rem 0.45rem', borderRadius: '9999px',
                       fontSize: '0.65rem', fontWeight: '600',
-                      backgroundColor: '#F3F4F6', color: '#374151',
+                      backgroundColor: theme.tagBg, color: theme.textMed,
                     }}>
                       {task.taskType}
                     </span>
                   </div>
                   <p style={{
-                    fontSize: '0.85rem', fontWeight: '600', color: '#111827',
+                    fontSize: '0.85rem', fontWeight: '600', color: theme.text,
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}>
                     {task.title}
@@ -266,7 +271,7 @@ function TaskPickerModal({ tasks, generating, onGenerate, onClose }) {
                 {generating ? (
                   <Loader2 size={16} color="#CC2027" style={{ animation: 'spin 1s linear infinite', flexShrink: 0, marginLeft: '0.75rem' }} />
                 ) : (
-                  <ChevronRight size={16} color="#9CA3AF" style={{ flexShrink: 0, marginLeft: '0.75rem' }} />
+                  <ChevronRight size={16} color={theme.textMuted} style={{ flexShrink: 0, marginLeft: '0.75rem' }} />
                 )}
               </button>
             ))
@@ -275,13 +280,13 @@ function TaskPickerModal({ tasks, generating, onGenerate, onClose }) {
 
         {/* Footer */}
         <div style={{
-          padding: '1rem 1.5rem', borderTop: '1px solid #F0F0F0',
+          padding: '1rem 1.5rem', borderTop: `1px solid ${theme.border}`,
           display: 'flex', justifyContent: 'flex-end',
         }}>
           <button onClick={onClose} style={{
             padding: '0.5rem 1.25rem', borderRadius: '0.5rem',
-            border: '1px solid #E5E7EB', backgroundColor: 'white',
-            color: '#374151', fontSize: '0.85rem', cursor: 'pointer',
+            border: `1px solid ${theme.borderMed}`, backgroundColor: theme.cardBg,
+            color: theme.textMed, fontSize: '0.85rem', cursor: 'pointer',
           }}>
             {t('workplace_cancel')}
           </button>
@@ -293,6 +298,7 @@ function TaskPickerModal({ tasks, generating, onGenerate, onClose }) {
 
 function Workplace() {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const navigate = useNavigate();
 
   const [workplaces, setWorkplaces] = useState([]);
@@ -350,8 +356,8 @@ function Workplace() {
         <button onClick={load} style={{
           display: 'flex', alignItems: 'center', gap: '0.4rem',
           padding: '0.5rem 1rem', borderRadius: '0.5rem',
-          border: '1px solid #E5E7EB', backgroundColor: 'white',
-          color: '#374151', fontSize: '0.82rem', cursor: 'pointer',
+          border: `1px solid ${theme.borderMed}`, backgroundColor: theme.cardBg,
+          color: theme.textMed, fontSize: '0.82rem', cursor: 'pointer',
         }}>
           <RefreshCw size={14} /> {t('common_refresh')}
         </button>
@@ -390,39 +396,29 @@ function Workplace() {
 
       {/* Loading */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '4rem', color: '#6B7280' }}>
+        <div style={{ textAlign: 'center', padding: '4rem', color: theme.textSub }}>
           <Loader2 size={32} color="#CC2027" style={{ margin: '0 auto 0.75rem', animation: 'spin 1s linear infinite' }} />
           <p style={{ fontSize: '0.85rem' }}>{t('workplace_loading')}</p>
         </div>
       ) : workplaces.length === 0 ? (
         /* Empty state */
-        <div style={{
-          backgroundColor: 'white', borderRadius: '0.75rem',
-          border: '1px solid #F0F0F0', padding: '4rem 2rem',
-          textAlign: 'center',
-        }}>
-          <div style={{
-            width: '64px', height: '64px', borderRadius: '50%',
-            backgroundColor: '#FEF2F2', margin: '0 auto 1.25rem',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <BriefcaseBusiness size={28} color="#CC2027" />
-          </div>
-          <h3 style={{ fontSize: '1rem', fontWeight: '700', color: '#111827', marginBottom: '0.4rem' }}>
-            {t('workplace_empty_title')}
-          </h3>
-          <p style={{ fontSize: '0.85rem', color: '#6B7280', marginBottom: '1.5rem', maxWidth: '340px', margin: '0 auto 1.5rem' }}>
-            {t('workplace_empty_subtitle')}
-          </p>
-          <button onClick={() => { setGenError(null); setShowPicker(true); }} style={{
-            display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
-            padding: '0.6rem 1.5rem', borderRadius: '0.5rem',
-            backgroundColor: '#CC2027', border: 'none',
-            color: 'white', fontSize: '0.85rem', fontWeight: '600',
-            cursor: 'pointer',
-          }}>
-            <Plus size={16} /> {t('workplace_generate_btn')}
-          </button>
+        <div style={{ backgroundColor: theme.cardBg, borderRadius: '0.75rem', border: `1px solid ${theme.border}` }}>
+          <EmptyState
+            variant="workplace"
+            title={t('workplace_empty_title')}
+            subtitle={t('workplace_empty_subtitle')}
+            action={
+              <button onClick={() => { setGenError(null); setShowPicker(true); }} style={{
+                display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+                padding: '0.6rem 1.5rem', borderRadius: '0.5rem',
+                backgroundColor: '#CC2027', border: 'none',
+                color: 'white', fontSize: '0.85rem', fontWeight: '600',
+                cursor: 'pointer',
+              }}>
+                <Plus size={16} /> {t('workplace_generate_btn')}
+              </button>
+            }
+          />
         </div>
       ) : (
         /* Workplaces grid */

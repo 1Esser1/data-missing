@@ -2,10 +2,12 @@ import { useLocation, Link } from 'react-router-dom';
 import {
   LayoutDashboard, ClipboardList, ListOrdered,
   Brain, FileBarChart, Settings, LogOut, ShieldCheck, Scale,
-  BriefcaseBusiness, ClipboardCheck, Link2, Activity, Kanban, Users, Timer,
+  BriefcaseBusiness, ClipboardCheck, Link2, Activity, Kanban, Users, Timer, GitMerge,
+  Moon, Sun,
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import SkeletonText from '../ui/SkeletonText';
 
 const NAV_ITEMS = [
@@ -15,8 +17,8 @@ const NAV_ITEMS = [
   { path: '/scoring', icon: Brain, labelKey: 'nav_scoring' },
   { path: '/compare', icon: Scale, labelKey: 'nav_compare' },
   { path: '/workplace', icon: BriefcaseBusiness, labelKey: 'nav_workplace' },
+  { path: '/task-relations', icon: GitMerge, labelKey: 'nav_task_relations' },
   { path: '/sprint', icon: Kanban, labelKey: 'nav_sprint' },
-  { path: '/workload', icon: Users, labelKey: 'nav_workload' },
   { path: '/sla', icon: Timer, labelKey: 'nav_sla' },
   { path: '/reports', icon: FileBarChart, labelKey: 'nav_reports' },
   { path: '/dora', icon: Activity, labelKey: 'nav_dora' },
@@ -32,6 +34,7 @@ function Sidebar() {
   const location = useLocation();
   const { user, logout } = useAuthStore();
   const { language, setLanguage, t, isRTL } = useLanguage();
+  const { isDark, toggleDark } = useTheme();
 
   const isActive = (path) => location.pathname === path;
 
@@ -135,7 +138,10 @@ function Sidebar() {
             }}>
               <SkeletonText width={76} height="0.68rem">{t('nav_management')}</SkeletonText>
             </p>
-            {[{ path: '/audit', icon: ClipboardCheck, labelKey: 'nav_audit' }].map((item) => {
+            {[
+              { path: '/workload', icon: Users,         labelKey: 'nav_workload' },
+              { path: '/audit',    icon: ClipboardCheck, labelKey: 'nav_audit'    },
+            ].map((item) => {
               const Icon = item.icon;
               const active = isActive(item.path);
               return (
@@ -249,6 +255,38 @@ function Sidebar() {
             </p>
           </div>
         </div>
+
+        {/* Dark mode toggle */}
+        <button
+          onClick={toggleDark}
+          style={{
+            width: '100%', display: 'flex', alignItems: 'center', gap: '0.75rem',
+            padding: '0.6rem 0.75rem', borderRadius: '0.5rem',
+            border: 'none', backgroundColor: 'transparent',
+            cursor: 'pointer', marginBottom: '0.1rem',
+          }}
+        >
+          {isDark
+            ? <Sun size={16} color="#9CA3AF" />
+            : <Moon size={16} color="#9CA3AF" />}
+          <span style={{ color: '#9CA3AF', fontSize: '0.875rem', flex: 1, textAlign: isRTL ? 'right' : 'left' }}>
+            {isDark ? 'Light mode' : 'Dark mode'}
+          </span>
+          {/* Toggle pill */}
+          <div style={{
+            width: '32px', height: '18px', borderRadius: '9px', flexShrink: 0,
+            backgroundColor: isDark ? '#CC2027' : 'rgba(255,255,255,0.15)',
+            position: 'relative', transition: 'background-color 0.2s',
+          }}>
+            <div style={{
+              width: '14px', height: '14px', borderRadius: '50%',
+              backgroundColor: 'white',
+              position: 'absolute', top: '2px',
+              left: isDark ? '16px' : '2px',
+              transition: 'left 0.2s',
+            }} />
+          </div>
+        </button>
 
         {/* Logout */}
         <button onClick={logout} style={{
